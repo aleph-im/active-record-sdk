@@ -4,21 +4,25 @@ AARS's goal is to provide simple guardrails for the creation of document databas
 
 You can create a model of your planned database by using the `AlephRecord` class.
 
+## Usage
+
 ```python
-from aleph_ars import Record, Index
+from src.aars.core import Record, Index, AARS
+
 
 class Book(Record):
-    title: str
-    author: str
+  title: str
+  author: str
+
+
+# initialize the SDK and post subsequent requests to the "MyLibrary" channel on Aleph
+AARS(channel="MyLibrary")
 
 # create and add an index for the book title
 Index(Book, 'title')
 
 # create & upload a book
 new_book = await Book.create(title='Atlas Shrugged', author='Ayn Rand')
-
-# assert the index works
-assert new_book == (await Book.query(title='Atlas Shrugged'))[0]
 ```
 
 
@@ -29,7 +33,7 @@ assert new_book == (await Book.query(title='Atlas Shrugged'))[0]
   - [x] Multi-key indexing
 - [ ] (IN PROGRESS) Basic search/filtering operations
 - [ ] Handle pagination
-- [ ] Encapsulate Aleph SDK as class
+- [x] Encapsulate Aleph SDK as class
 - [ ] Local caching
 - [ ] (IN PROGRESS) Add tests
 - [ ] (IN PROGRESS) Add documentation

@@ -1,9 +1,11 @@
 import asyncio
 from typing import List
 
-from src.aars.core import Record, Index
+from src.aars.core import Record, Index, AARS
 from src.aars.exceptions import AlreadyForgottenError
 import pytest
+
+AARS()
 
 
 @pytest.fixture(scope="session")

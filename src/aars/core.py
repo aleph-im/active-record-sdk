@@ -160,26 +160,34 @@ class Record(BaseModel, ABC):
 
         If no index is defined for the given properties, an IndexError is raised.
 
-        TODO: If only a part of the keys is indexed for the given query, a fallback index is used and locally filtered.
+        If only a part of the keys is indexed for the given query, a fallback index is used and locally filtered.
         """
-        sorted_kwargs = OrderedDict(dict(sorted(kwargs.items())))
-        sorted_keys = sorted_kwargs.keys()
+        sorted_items = OrderedDict(sorted(kwargs.items()))
+        sorted_keys = sorted_items.keys()
         full_index_name = cls.__name__ + '.' + '.'.join(sorted_keys)
         if cls.__indices.get(full_index_name) is None:
-            key_subslices = subslices(list(sorted_kwargs.keys()))  # returns all plausible combinations of keys
+            key_subslices = subslices(list(sorted_items.keys()))
+            # returns all plausible combinations of keys
             key_subslices = sorted(key_subslices, key=lambda x: len(x), reverse=True)
             for keys in key_subslices:
                 name = cls.__name__ + '.' + '.'.join(keys)
                 if cls.__indices.get(name):
                     warnings.warn(f'No index {full_index_name} found. Using {name} instead.')
-                    # TODO: Manually loop through all the accessed records here and filter them
-                    return await cls.__indices[name].fetch(
-                        OrderedDict({key: sorted_kwargs.get(key) for key in keys})
+                    list_of_items_returned_from_fetch = await cls.__indices[name].fetch(
+                        OrderedDict({key: sorted_items.get(key) for key in keys})
                     )
-            raise IndexError(f'No index {full_index_name} found.')
+                    final_items = list()
+                    for item in list_of_items_returned_from_fetch:
+                        # eliminate the item which does not fulfill this properties
+                        class_properties = vars(item)
+                        required_class_properties = {key: class_properties.get(key) for key in sorted_keys}
+                        if required_class_properties == dict(sorted_items):
+                            final_items.append(item)
+                    return final_items
+            raise IndexError(f'No index or subindex for {full_index_name} found.')
         else:
             return await cls.__indices[full_index_name].fetch(
-                OrderedDict({key: sorted_kwargs.get(key) for key in sorted_keys})
+                OrderedDict({key: sorted_items.get(key) for key in sorted_keys})
             )
 
     @classmethod
@@ -230,6 +238,9 @@ class Index(Record):
             hashes = set()
 
         return await AARS.fetch_records(self.datatype, list(hashes))
+
+    def get(self, obj):
+        return self.hashmap.get(attrgetter(*self.index_on)(obj))
 
     def add(self, obj: T):
         assert isinstance(obj, Record)

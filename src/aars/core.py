@@ -165,34 +165,48 @@ class Record(BaseModel, ABC):
         sorted_items = OrderedDict(sorted(kwargs.items()))
         sorted_keys = sorted_items.keys()
         full_index_name = cls.__name__ + '.' + '.'.join(sorted_keys)
-        if cls.__indices.get(full_index_name) is None:
-            key_subslices = subslices(list(sorted_items.keys()))
+        index = cls.get_index(full_index_name)
+        keys = repr(index).split('.')[1:]
+        items = await index.fetch(
+            OrderedDict({key: sorted_items.get(key) for key in keys})
+        )
+        if full_index_name != repr(index):
+            filtered_items = list()
+            for item in items:
+                # eliminate the item which does not fulfill this properties
+                class_properties = vars(item)
+                required_class_properties = {key: class_properties.get(key) for key in sorted_keys}
+                if required_class_properties == dict(sorted_items):
+                    filtered_items.append(item)
+            return filtered_items
+        else:
+            return items
+
+    @classmethod
+    def add_index(cls: Type[T], index: 'Index') -> None:
+        cls.__indices[repr(index)] = index
+
+    @classmethod
+    def get_index(cls: Type[T], index_name: str) -> 'Index':
+        """
+        Returns an index or any of its subindices by its name. The name is defined as
+        '<object_class>.[<object_properties>.]' with the properties being sorted alphabetically. For example,
+        Book.author.title is a valid index name, while Book.title.author is not.
+        :param index_name: The name of the index to fetch.
+        :return: The index instance or a subindex.
+        """
+        index = cls.__indices.get(index_name)
+        if index is None:
+            key_subslices = subslices(list(index_name.split('.')[1:]))
             # returns all plausible combinations of keys
             key_subslices = sorted(key_subslices, key=lambda x: len(x), reverse=True)
             for keys in key_subslices:
                 name = cls.__name__ + '.' + '.'.join(keys)
                 if cls.__indices.get(name):
-                    warnings.warn(f'No index {full_index_name} found. Using {name} instead.')
-                    list_of_items_returned_from_fetch = await cls.__indices[name].fetch(
-                        OrderedDict({key: sorted_items.get(key) for key in keys})
-                    )
-                    final_items = list()
-                    for item in list_of_items_returned_from_fetch:
-                        # eliminate the item which does not fulfill this properties
-                        class_properties = vars(item)
-                        required_class_properties = {key: class_properties.get(key) for key in sorted_keys}
-                        if required_class_properties == dict(sorted_items):
-                            final_items.append(item)
-                    return final_items
-            raise IndexError(f'No index or subindex for {full_index_name} found.')
-        else:
-            return await cls.__indices[full_index_name].fetch(
-                OrderedDict({key: sorted_items.get(key) for key in sorted_keys})
-            )
-
-    @classmethod
-    def add_index(cls: Type[T], index: 'Index') -> None:
-        cls.__indices[repr(index)] = index
+                    warnings.warn(f'No index {index_name} found. Using {name} instead.')
+                    return cls.__indices[name]
+            raise IndexError(f'No index or subindex for {index_name} found.')
+        return index
 
     @classmethod
     def get_indices(cls: Type[T]) -> List['Index']:

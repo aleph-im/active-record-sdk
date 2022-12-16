@@ -1,21 +1,19 @@
 import asyncio
 from typing import List
 
+from aleph_client.asynchronous import get_fallback_session
+
 from src.aars import Record, Index, AARS
 from src.aars.exceptions import AlreadyForgottenError
 import pytest
 
-AARS()
+AARS(session=get_fallback_session())
 
 
 @pytest.fixture(scope="session")
 def event_loop():
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
+    yield AARS.session.loop
+    asyncio.run(AARS.session.close())
 
 
 class Book(Record):
@@ -87,6 +85,7 @@ async def test_forget_object():
 
 
 @pytest.mark.asyncio
+@pytest.mark.filterwarnings("ignore:.*No index*")
 async def test_store_and_wrong_query():
     Index(Book, 'title')
     new_book = await Book.create(title='Atlas Shrugged', author='Ayn Rand')

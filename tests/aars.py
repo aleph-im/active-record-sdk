@@ -85,11 +85,11 @@ async def test_forget_object():
 
 
 @pytest.mark.asyncio
-@pytest.mark.filterwarnings("ignore:.*No index*")
 async def test_store_and_wrong_query():
     Index(Book, 'title')
     new_book = await Book.create(title='Atlas Shrugged', author='Ayn Rand')
     assert new_book.title == 'Atlas Shrugged'
     assert new_book.author == 'Ayn Rand'
-    fetched_book = (await Book.query(title='Atlas Shrugged', index="index"))
+    with pytest.warns(UserWarning):
+        fetched_book = (await Book.query(title='Atlas Shrugged', index="index"))
     assert len(fetched_book) == 0

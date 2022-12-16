@@ -1,1 +1,1 @@
-from core import Record, Index, AARS
+from .core import Record, Index, AARS

@@ -7,7 +7,7 @@ You can create a model of your planned database by using the `Record` class.
 ## Usage
 
 ```python
-from src.aars import Record, Index, AARS
+from aars import Record, Index, AARS
 
 
 class Book(Record):

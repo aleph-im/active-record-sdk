@@ -13,8 +13,8 @@ from aleph_client.types import Account
 from aleph_client.chains.ethereum import get_fallback_account
 from aleph_client.conf import settings
 
-from src.aars.utils import subslices
-from src.aars.exceptions import AlreadyForgottenError
+from .utils import subslices
+from .exceptions import AlreadyForgottenError
 
 T = TypeVar('T', bound='Record')
 

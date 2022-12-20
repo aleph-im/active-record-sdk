@@ -23,6 +23,12 @@ Index(Book, 'title')
 
 # create & upload a book
 new_book = await Book.create(title='Atlas Shrugged', author='Ayn Rand')
+
+# retrieve a book by its ID
+book = await Book.get(new_book.id)[0]
+
+# retrieve a book by its title
+book = await Book.query(title='Atlas Shrugged')[0]
 ```
 
 
@@ -31,9 +37,10 @@ new_book = await Book.create(title='Atlas Shrugged', author='Ayn Rand')
 - [x] Basic indexing operations
   - [x] Single-key indexing 
   - [x] Multi-key indexing
+  - [ ] Name indices' post_type 
 - [ ] (IN PROGRESS) Basic search/filtering operations
 - [ ] Handle pagination
 - [x] Encapsulate Aleph SDK as class
 - [ ] Local caching
-- [ ] (IN PROGRESS) Add tests
-- [ ] (IN PROGRESS) Add documentation
+- [x] Add tests
+- [x] Add documentation

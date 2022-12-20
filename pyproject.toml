@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "aars"
-version = "0.2.0"
+version = "0.2.1"
 authors = [
   { name="Mike Hukiewitz", email="mike.hukiewitz@robotter.ai" },
 ]
@@ -19,7 +19,7 @@ classifiers = [
 
 [dependencies]
 pydantic = "^1.8.2"
-aleph_client = "git+https://github.com/aleph-im/aleph-client.git@master#egg=aleph_client"
+aleph_client = "^0.5.0"
 
 [project.urls]
 "Homepage" = "https://github.com/aleph-im/active-record-sdk"

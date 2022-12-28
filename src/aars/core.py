@@ -6,6 +6,7 @@ from operator import attrgetter
 from typing import Type, TypeVar, Dict, ClassVar, List, Set, Any, Union, Tuple, Optional
 
 import aiohttp
+from aleph_client.vm.cache import VmCache
 from pydantic import BaseModel
 
 import aleph_client.asynchronous as client
@@ -120,7 +121,6 @@ class Record(BaseModel, ABC):
         obj = cls(**post['content'])
         if post.get('ref') is None:
             obj.item_hash = post['item_hash']
-            obj.revision_hashes.append(post['item_hash'])
         else:
             obj.item_hash = post['ref']
         await obj.update_revision_hashes()
@@ -260,27 +260,33 @@ class Index(Record):
 
 
 class AARS:
-    account: Account = get_fallback_account()
-    channel: str = 'AARS_TEST'
-    api_url: str = settings.API_HOST
-    session: Optional[aiohttp.ClientSession] = None
+    account: Account
+    channel: str
+    api_url: str
+    session: Optional[aiohttp.ClientSession]
+    use_cache: bool
+    cache: VmCache
 
     def __init__(self,
+                 use_cache: Optional[bool] = False,
                  account: Optional[Account] = None,
                  channel: Optional[str] = None,
                  api_url: Optional[str] = None,
                  session: Optional[aiohttp.ClientSession] = None):
         """
         Initializes the SDK with an account and a channel.
+        :param use_cache: Whether to use Aleph VM caching when running AARS code.
         :param account: Account with which to sign the messages.
         :param channel: Channel to which to send the messages.
         :param api_url: The API URL to use. Defaults to an official Aleph API host.
         :param session: An aiohttp session to use. Defaults to a new session.
         """
+        AARS.use_cache = use_cache
         AARS.account = account if account else get_fallback_account()
         AARS.channel = channel if channel else 'AARS_TEST'
         AARS.api_url = api_url if api_url else settings.API_HOST
         AARS.session = session if session else None
+        AARS.cache = VmCache(session) if session and use_cache else None
 
     @classmethod
     async def post_or_amend_object(cls, obj: T, account=None, channel=None):
@@ -308,11 +314,13 @@ class AARS:
             obj.item_hash = resp.item_hash
         obj.revision_hashes.append(resp.item_hash)
         obj.current_revision = len(obj.revision_hashes) - 1
+        if cls.use_cache:
+            await cls.cache.set(obj.item_hash, obj.json())
 
     @classmethod
     async def forget_objects(cls, objs: List[T], account: Account = None, channel: str = None):
         """
-        Forgets multiple objects from Aleph. All related revisions will be forgotten too.
+        Forgets multiple objects from Aleph and local cache. All related revisions will be forgotten too.
         :param objs: The objects to forget.
         :param account: The account to delete the object with. If None, will use the fallback account.
         :param channel: The channel to delete the object from. If None, will use the TEST channel of the object.
@@ -324,12 +332,19 @@ class AARS:
         hashes = []
         for obj in objs:
             hashes += [obj.item_hash] + obj.revision_hashes
-        await client.forget(account=account,
-                            hashes=hashes,
-                            reason=None,
-                            channel=channel,
-                            api_server=cls.api_url,
-                            session=cls.session)
+        forget_task = client.forget(account=account,
+                                    hashes=hashes,
+                                    reason=None,
+                                    channel=channel,
+                                    api_server=cls.api_url,
+                                    session=cls.session)
+        if cls.use_cache:
+            await asyncio.gather(
+                forget_task,
+                *[cls.cache.delete(h) for h in hashes]
+            )
+        else:
+            await forget_task
 
     @classmethod
     async def fetch_records(cls,
@@ -347,14 +362,39 @@ class AARS:
         owners = None if owner is None else [owner]
         if item_hashes is None and channels is None and owners is None:
             channels = [cls.channel]
-        resp = await client.get_posts(hashes=item_hashes,
-                                      channels=channels,
-                                      types=[datatype.__name__],
-                                      addresses=owners,
-                                      api_server=cls.api_url,
-                                      session=cls.session)
-        tasks = [datatype.from_post(post) for post in resp['posts']]
-        return list(await asyncio.gather(*tasks))
+
+        if cls.use_cache:
+            return await cls._fetch_record_from_cache(channels, datatype, item_hashes, owners)
+
+        aleph_resp = await client.get_posts(hashes=item_hashes,
+                                            channels=channels,
+                                            types=[datatype.__name__],
+                                            addresses=owners,
+                                            api_server=cls.api_url,
+                                            session=cls.session)
+        parse_tasks = [datatype.from_post(post) for post in aleph_resp['posts']]
+        return list(await asyncio.gather(*parse_tasks))
+
+    @classmethod
+    async def _fetch_record_from_cache(cls, channels, datatype, item_hashes, owners):
+        cache_tasks = [cls.cache.get(h) for h in item_hashes]
+        cache_resp = list(await asyncio.gather(*cache_tasks))
+        cache_miss_hashes = []
+        for i, cached in reversed(list(enumerate(cache_resp))):
+            if cached is None:
+                cache_miss_hashes.append(item_hashes[i])
+                cache_resp.pop(i)
+        parse_tasks = []
+        if len(cache_miss_hashes) > 0:
+            aleph_resp = await client.get_posts(hashes=cache_miss_hashes,
+                                                channels=channels,
+                                                types=[datatype.__name__],
+                                                addresses=owners,
+                                                api_server=cls.api_url,
+                                                session=cls.session)
+            parse_tasks = [datatype.from_post(post) for post in aleph_resp['posts']]
+        parse_tasks = parse_tasks + [datatype.parse_raw(raw) for raw in cache_resp]
+        return list(await asyncio.gather(*parse_tasks))
 
     @classmethod
     async def fetch_revisions(cls,

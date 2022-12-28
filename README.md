@@ -41,6 +41,6 @@ book = await Book.query(title='Atlas Shrugged')[0]
 - [ ] (IN PROGRESS) Basic search/filtering operations
 - [ ] Handle pagination
 - [x] Encapsulate Aleph SDK as class
-- [ ] Local caching
+- [x] Local VM caching
 - [x] Add tests
 - [x] Add documentation

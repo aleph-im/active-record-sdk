@@ -123,8 +123,6 @@ class Record(BaseModel, ABC):
             obj.revision_hashes.append(post['item_hash'])
         else:
             obj.item_hash = post['ref']
-            obj.revision_hashes = await AARS.fetch_revisions(cls, ref=obj.item_hash)
-        obj.item_hash = post['item_hash'] if post.get('ref') is None else post['ref']
         await obj.update_revision_hashes()
         obj.current_revision = obj.revision_hashes.index(post['item_hash'])
         return obj

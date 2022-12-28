@@ -48,6 +48,8 @@ async def test_multi_index():
 async def test_fetch_all():
     books = await Book.fetch_all()
     assert len(books) > 0
+    for book in books:
+        assert isinstance(book, Book)
 
 
 @pytest.mark.asyncio

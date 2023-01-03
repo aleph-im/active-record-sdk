@@ -86,7 +86,8 @@ class Record(BaseModel, ABC):
 
     async def upsert(self):
         """
-        Posts a new item to Aleph or amends it, if it was already posted. Will add the new revision
+        Posts a new item to Aleph or amends it, if it was already posted. Will add new items to local indices.
+        For indices to be persisted on Aleph, you need to call `upsert()` on the index itself or `cls.update_indices()`.
         """
         await AARS.post_or_amend_object(self)
         if self.current_revision == 0:
@@ -210,6 +211,18 @@ class Record(BaseModel, ABC):
     def get_indices(cls: Type[T]) -> List['Index']:
         return [index for index in cls.__indices.values() if index.datatype == cls]
 
+    @classmethod
+    async def update_indices(cls: Type[T]) -> None:
+        """Updates all indices of given type."""
+        tasks = [index.upsert() for index in cls.get_indices()]
+        await asyncio.gather(*tasks)
+
+    @classmethod
+    async def regenerate_indices(cls: Type[T]) -> None:
+        """Regenerates all indices of given type."""
+        items = await cls.fetch_all()
+        tasks = [index.regenerate(items) for index in cls.get_indices()]
+
 
 class Index(Record):
     """
@@ -251,12 +264,19 @@ class Index(Record):
 
         return await AARS.fetch_records(self.datatype, list(hashes))
 
-    def get(self, obj):
+    def get(self, obj: tuple) -> str:
         return self.hashmap.get(attrgetter(*self.index_on)(obj))
 
     def add(self, obj: T):
+        """Adds a record to the index."""
         assert isinstance(obj, Record)
         self.hashmap[attrgetter(*self.index_on)(obj)] = obj.item_hash
+
+    def regenerate(self, items: List[T]):
+        """Regenerates the index with given items."""
+        self.hashmap = {}
+        for item in items:
+            self.add(item)
 
 
 class AARS:
@@ -302,10 +322,10 @@ class AARS:
             account = cls.account
         if channel is None:
             channel = cls.channel
-        name = type(obj).__name__
+        post_type = type(obj).__name__ if obj.item_hash is None else "amend"
         resp = await client.create_post(account=account,
                                         post_content=obj.content,
-                                        post_type=name,
+                                        post_type=post_type,
                                         channel=channel,
                                         ref=obj.item_hash,
                                         api_server=cls.api_url,

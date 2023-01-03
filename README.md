@@ -34,11 +34,11 @@ book = await Book.query(title='Atlas Shrugged')[0]
 
 ## ToDo:
 - [x] Basic CRUD operations
-- [x] Basic indexing operations
+- [x] Basic indexing/querying operations
   - [x] Single-key indexing 
   - [x] Multi-key indexing
-  - [ ] Name indices' post_type 
-- [ ] (IN PROGRESS) Basic search/filtering operations
+  - [x] Query with list of keys
+  - [x] Update indices function
 - [ ] Handle pagination
 - [x] Encapsulate Aleph SDK as class
 - [x] Local VM caching

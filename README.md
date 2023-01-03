@@ -39,7 +39,7 @@ book = await Book.query(title='Atlas Shrugged')[0]
   - [x] Multi-key indexing
   - [x] Query with list of keys
   - [x] Update indices function
-- [ ] Handle pagination
+- [x] Handle pagination
 - [ ] Use "amend" post_type for updates (is it possible to get the first version of a document?) 
 - [x] Encapsulate Aleph SDK as class
 - [x] Local VM caching

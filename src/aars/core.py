@@ -1,9 +1,10 @@
 import asyncio
+import math
 import warnings
 from abc import ABC
 from collections import OrderedDict
 from operator import attrgetter
-from typing import Type, TypeVar, Dict, ClassVar, List, Set, Any, Union, Tuple, Optional, Generic
+from typing import Type, TypeVar, Dict, ClassVar, List, Set, Any, Union, Tuple, Optional, Generic, Generator
 
 import aiohttp
 from aleph_client.vm.cache import VmCache
@@ -407,7 +408,7 @@ class AARS:
                             datatype: Type[T],
                             item_hashes: Optional[List[str]] = None,
                             channel: Optional[str] = None,
-                            owner: Optional[str] = None) -> List[T]:
+                            owner: Optional[str] = None) -> Generator[T]:
         """Retrieves posts as objects by its aleph item_hash.
         :param datatype: The type of the objects to retrieve.
         :param item_hashes: Aleph item_hashes of the objects to fetch.
@@ -419,7 +420,7 @@ class AARS:
         if item_hashes is None and channels is None and owners is None:
             channels = [cls.channel]
         if cls.use_cache:
-            return await cls._fetch_record_from_cache(channels, datatype, item_hashes, owners)
+            yield cls._fetch_record_from_cache(channels, datatype, item_hashes, owners)
 
         aleph_resp = await client.get_posts(hashes=item_hashes,
                                             channels=channels,
@@ -428,19 +429,23 @@ class AARS:
                                             api_server=cls.api_url,
                                             session=cls.session,
                                             pagination=50)
+        for post in aleph_resp['posts']:
+            yield datatype.from_post(post)
         parse_tasks = [datatype.from_post(post) for post in aleph_resp['posts']]
-        return list(await asyncio.gather(*parse_tasks))
+        for task in parse_tasks:
+            yield await task
 
     @classmethod
-    async def _fetch_record_from_cache(cls, channels, datatype, item_hashes, owners):
-        cache_tasks = [cls.cache.get(h) for h in item_hashes]
-        cache_resp = list(await asyncio.gather(*cache_tasks))
+    async def _fetch_record_from_cache(cls, channels, datatype, item_hashes, owners, page=1) -> Generator[T]:
+        get_cache_tasks = [cls.cache.get(h) for h in item_hashes]
+        cache_resp = list(await asyncio.gather(*get_cache_tasks))
         cache_miss_hashes = []
         for i, cached in reversed(list(enumerate(cache_resp))):
             if cached is None:
                 cache_miss_hashes.append(item_hashes[i])
                 cache_resp.pop(i)
         parse_tasks = []
+        aleph_resp = None
         if len(cache_miss_hashes) > 0:
             aleph_resp = await client.get_posts(hashes=cache_miss_hashes,
                                                 channels=channels,
@@ -448,22 +453,34 @@ class AARS:
                                                 addresses=owners,
                                                 api_server=cls.api_url,
                                                 session=cls.session,
-                                                pagination=50)
+                                                pagination=50,
+                                                page=page)
             parse_tasks = [datatype.from_post(post) for post in aleph_resp['posts']]
         parse_tasks = parse_tasks + [datatype.parse_raw(raw) for raw in cache_resp]
-        return list(await asyncio.gather(*parse_tasks))
+        for obj in await asyncio.gather(*parse_tasks):
+            await cls.cache.set(obj.item_hash, obj.json())
+            yield obj
+
+        if aleph_resp is not None and page == 1:
+            last_iteration_total = aleph_resp['pagination_total']
+            last_per_page = aleph_resp['pagination_per_page']
+            if last_iteration_total > last_per_page:
+                for page in range(2, math.ceil(last_iteration_total / last_per_page) + 1):
+                    yield cls._fetch_record_from_cache(channels, datatype, item_hashes, owners, page)
 
     @classmethod
     async def fetch_revisions(cls,
                               datatype: Type[T],
                               ref: str,
                               channel: Optional[str] = None,
-                              owner: Optional[str] = None) -> List[str]:
+                              owner: Optional[str] = None,
+                              _page: int = 1) -> List[str]:
         """Retrieves posts of revisions of an object by its item_hash.
         :param datatype: The type of the objects to retrieve.
         :param ref: item_hash of the object, whose revisions to fetch.
         :param channel: Channel in which to look for it.
-        :param owner: Account that owns the object."""
+        :param owner: Account that owns the object.
+        :param _page: Page of the revisions to fetch. """
         owners = None if owner is None else [owner]
         channels = None if channel is None else [channel]
         if owners is None and channels is None:
@@ -474,5 +491,13 @@ class AARS:
                                       addresses=owners,
                                       api_server=cls.api_url,
                                       session=cls.session,
+                                      page=_page,
                                       pagination=50)
-        return list(reversed([post['item_hash'] for post in resp['posts']]))  # reverse to get the oldest first
+        for post in resp['posts']:
+            yield post['item_hash']
+
+        last_iteration_total = resp['pagination_total']
+        last_per_page = resp['pagination_per_page']
+        if _page == 1 and last_iteration_total > last_per_page:
+            for page in range(2, math.ceil(last_iteration_total / last_per_page) + 1):
+                yield cls.fetch_revisions(datatype, ref, channel, owner, page)

@@ -45,6 +45,10 @@ class Record(BaseModel, ABC):
         assert self._item_hash is not None, 'Item hash not set, upsert() first'
         return self._item_hash
 
+    @item_hash.setter
+    def item_hash(self, value: str):
+        self._item_hash = value
+
     @property
     def current_revision(self) -> int:
         assert self._current_revision is not None, 'Current revision not set, upsert() first'
@@ -235,7 +239,8 @@ class Record(BaseModel, ABC):
     async def regenerate_indices(cls: Type[T]) -> None:
         """Regenerates all indices of given type."""
         items = await cls.fetch_all()
-        tasks = [index.regenerate(items) for index in cls.get_indices()]
+        for index in cls.get_indices():
+            index.regenerate(items)
 
 
 class Index(Record, Generic[T]):
@@ -247,6 +252,22 @@ class Index(Record, Generic[T]):
     hashmap: Dict[Union[str, Tuple], str] = {}
 
     def __init__(self, datatype: Type[T], on: Union[str, List[str], Tuple[str]]):
+        """
+        Creates a new index given a datatype and a single or multiple properties to index on.
+
+        >>> Index(MyRecord, 'foo')
+
+        This will create an index named 'MyRecord.foo', which is stored in the `MyRecord` class.
+        It is not recommended using the index directly, but rather through the `query` method of the `Record` class like
+        so:
+
+        >>> MyRecord.query(foo='bar')
+
+        This returns all records of type MyRecord where foo is equal to 'bar'.
+
+        :param datatype: The datatype to index.
+        :param on: The properties to index on.
+        """
         if isinstance(on, str):
             on = [on]
         super(Index, self).__init__(datatype=datatype, index_on=sorted(on))
@@ -261,6 +282,8 @@ class Index(Record, Generic[T]):
     async def fetch(self, keys: Optional[Union[OrderedDict[str, str], List[OrderedDict[str, str]]]] = None) -> List[T]:
         """
         Fetches records with given hash(es) from the index.
+
+        :param keys: The hash(es) to fetch.
         """
         hashes: Set[Optional[str]]
         if keys is None:
@@ -333,6 +356,7 @@ class AARS:
             account = cls.account
         if channel is None:
             channel = cls.channel
+        assert isinstance(obj, Record)
         post_type = type(obj).__name__ if obj.item_hash is None else "amend"
         resp = await client.create_post(account=account,
                                         post_content=obj.content,

@@ -88,17 +88,21 @@ class Record(BaseModel, ABC):
             elif rev_no > len(self.revision_hashes):
                 raise IndexError(f'No revision no. {rev_no} found for {self}')
             else:
-                self._current_revision = rev_no
+                self.current_revision = rev_no
         elif rev_hash is not None:
+            if rev_hash == self.revision_hashes[self.current_revision]:
+                return self
             try:
-                self._current_revision = self.revision_hashes.index(rev_hash)
+                self.current_revision = self.revision_hashes.index(rev_hash)
             except ValueError:
                 raise IndexError(f'{rev_hash} is not a revision of {self}')
         else:
             raise ValueError('Either rev or hash must be provided')
 
-        # always fetch from aleph
-        self.__dict__.update((await AARS.fetch_records(type(self), item_hashes=[self.item_hash]))[0].content)
+        self.__dict__.update((await AARS.fetch_records(
+            type(self),
+            item_hashes=[self.revision_hashes[self.current_revision]]
+        ))[0].content)
 
         return self
 

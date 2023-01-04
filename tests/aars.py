@@ -64,6 +64,8 @@ async def test_amending_record():
     assert book.revision_hashes[1] != book.item_hash
     old_book = await book.fetch_revision(rev_no=0)
     assert old_book.title == 'Neurodancer'
+    new_book = await book.fetch_revision(rev_no=1)
+    assert new_book.title == 'Neuromancer'
 
 
 @pytest.mark.asyncio

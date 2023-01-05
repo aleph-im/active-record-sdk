@@ -134,14 +134,30 @@ class Record(BaseModel, ABC):
     @classmethod
     async def from_post(cls: Type[T], post: PostMessage) -> T:
         """
-        Initializes a record object from its raw Aleph data.
-        :post: Raw Aleph data.
+        Initializes a record object from its PostMessage.
+        :param post: the PostMessage to initialize from.
         """
         obj = cls(**post.content.content)
         if post.content.ref is None:
             obj.id_hash = post.item_hash
         else:
             obj.id_hash = post.content.ref
+        await obj.update_revision_hashes()
+        assert obj.id_hash is not None
+        obj.current_revision = obj.revision_hashes.index(obj.id_hash)
+        return obj
+
+    @classmethod
+    async def from_dict(cls: Type[T], post: Dict[str, Any]) -> T:
+        """
+        Initializes a record object from its raw Aleph data.
+        :post: Raw Aleph data.
+        """
+        obj = cls(**post['content'])
+        if post.get('ref') is None:
+            obj.id_hash = post['item_hash']
+        else:
+            obj.id_hash = post['ref']
         await obj.update_revision_hashes()
         assert obj.id_hash is not None
         obj.current_revision = obj.revision_hashes.index(obj.id_hash)
@@ -473,7 +489,7 @@ class AARS:
                 if retries == 0:
                     raise
         for post in aleph_resp['posts']:
-            yield await datatype.from_post(post)
+            yield await datatype.from_dict(post)
 
         if page == 1:
             # If there are more pages, fetch them

@@ -1,5 +1,8 @@
 import operator
 from itertools import *
+from typing import AsyncIterator, List, TypeVar
+
+T = TypeVar('T')
 
 
 def subslices(seq):
@@ -23,3 +26,10 @@ def possible_index_names(seq):
         list(possible_index_names(['A', 'B', 'C'])) == [['A'], ['A.B'], ['A.B.C'], ['B'], ['B.C'], ['C']]
     """
     return map('.'.join, subslices(seq))
+
+
+async def async_iterator_to_list(iterator: AsyncIterator[T]) -> List[T]:
+    """
+    Return a list from an async iterator.
+    """
+    return [item async for item in iterator]

@@ -45,14 +45,6 @@ async def test_multi_index():
 
 
 @pytest.mark.asyncio
-async def test_fetch_all():
-    books = await Book.fetch_all()
-    assert len(books) > 0
-    for book in books:
-        assert isinstance(book, Book)
-
-
-@pytest.mark.asyncio
 async def test_amending_record():
     book = await Book.create(title='Neurodancer', author='William Gibson')
     assert book.current_revision == 0

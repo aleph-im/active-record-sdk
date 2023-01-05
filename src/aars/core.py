@@ -9,6 +9,7 @@ from typing import Type, TypeVar, Dict, ClassVar, List, Set, Any, Union, Tuple, 
 import aiohttp
 from aiohttp import ServerDisconnectedError
 from aleph_client.vm.cache import VmCache
+from aleph_message.models import PostMessage, BaseMessage
 from pydantic import BaseModel
 
 import aleph_client.asynchronous as client
@@ -93,12 +94,11 @@ class Record(BaseModel, ABC):
         else:
             raise ValueError('Either rev or hash must be provided')
 
-        resp = (await async_iterator_to_list(AARS.fetch_records(
+        resp = await AARS.fetch_exact(
             type(self),
-            item_hashes=[self.revision_hashes[self.current_revision]]
-        )))
-        content = resp[0].content
-        self.__dict__.update(content)
+            self.revision_hashes[self.current_revision]
+        )
+        self.__dict__.update(resp.content)
 
         return self
 
@@ -132,16 +132,16 @@ class Record(BaseModel, ABC):
         return await obj.upsert()
 
     @classmethod
-    async def from_post(cls: Type[T], post: Dict[str, Any]) -> T:
+    async def from_post(cls: Type[T], post: PostMessage) -> T:
         """
         Initializes a record object from its raw Aleph data.
         :post: Raw Aleph data.
         """
-        obj = cls(**post['content'])
-        if post.get('ref') is None:
-            obj.id_hash = post['item_hash']
+        obj = cls(**post.content.content)
+        if post.content.ref is None:
+            obj.id_hash = post.item_hash
         else:
-            obj.id_hash = post['ref']
+            obj.id_hash = post.content.ref
         await obj.update_revision_hashes()
         assert obj.id_hash is not None
         obj.current_revision = obj.revision_hashes.index(obj.id_hash)
@@ -538,3 +538,25 @@ class AARS:
                             owner=owner,
                             page=next_page):
                         yield item_hash
+
+    @classmethod
+    async def fetch_exact(cls,
+                          datatype: Type[T],
+                          item_hash: str) -> T:
+        """Retrieves the revision of an object by its item_hash of the message. The content will be exactly the same
+        as in the referenced message, so no amendments will be applied.
+
+        :param item_hash:
+        :param datatype: The type of the objects to retrieve.
+        """
+        if cls.cache:
+            cache_resp = await cls._fetch_records_from_cache(datatype, [item_hash])
+            if len(cache_resp) > 0:
+                return cache_resp[0]
+        aleph_resp = await client.get_messages(hashes=[item_hash],
+                                               api_server=cls.api_url,
+                                               session=cls.session)
+        if len(aleph_resp.messages) == 0:
+            raise ValueError(f"Message with hash {item_hash} not found.")
+        message: PostMessage = aleph_resp.messages[0]
+        return await datatype.from_post(message)

@@ -34,9 +34,9 @@ book = await Book.query(title='Atlas Shrugged')[0]
 
 ## ToDo:
 - [x] Basic CRUD operations
-- [ ] Versioning
+- [x] Versioning
   - [x] Use "amend" post_type for updates
-  - [ ] Fetch revisions with messages endpoint
+  - [x] Fetch revisions with messages endpoint
 - [x] Basic indexing/querying operations
   - [x] Single-key indexing 
   - [x] Multi-key indexing

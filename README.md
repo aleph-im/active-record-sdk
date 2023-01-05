@@ -25,7 +25,7 @@ Index(Book, 'title')
 new_book = await Book.create(title='Atlas Shrugged', author='Ayn Rand')
 
 # retrieve a book by its ID
-book = await Book.get(new_book.id)[0]
+book = await Book.get(new_book.id_hash)[0]
 
 # retrieve a book by its title
 book = await Book.query(title='Atlas Shrugged')[0]
@@ -40,6 +40,7 @@ book = await Book.query(title='Atlas Shrugged')[0]
   - [x] Query with list of keys
   - [x] Update indices function
 - [ ] Handle pagination
+- [ ] Use "amend" post_type for updates (is it possible to get the first version of a document?) 
 - [x] Encapsulate Aleph SDK as class
 - [x] Local VM caching
 - [x] Add tests

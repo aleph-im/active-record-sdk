@@ -55,13 +55,14 @@ async def test_fetch_all():
 @pytest.mark.asyncio
 async def test_amending_record():
     book = await Book.create(title='Neurodancer', author='William Gibson')
+    assert book.current_revision == 0
     book.title = 'Neuromancer'
     book = await book.upsert()
     assert book.title == 'Neuromancer'
     assert len(book.revision_hashes) == 2
     assert book.current_revision == 1
-    assert book.revision_hashes[0] == book.item_hash
-    assert book.revision_hashes[1] != book.item_hash
+    assert book.revision_hashes[0] == book.id_hash
+    assert book.revision_hashes[1] != book.id_hash
     old_book = await book.fetch_revision(rev_no=0)
     assert old_book.title == 'Neurodancer'
     new_book = await book.fetch_revision(rev_no=1)
@@ -85,7 +86,7 @@ async def test_forget_object():
     forgettable_book = await Book.create(title="The Forgotten Book", author="Mechthild Gläser")  # I'm sorry.
     await forgettable_book.forget()
     assert forgettable_book.forgotten is True
-    assert len(await Book.get(forgettable_book.item_hash)) == 0
+    assert len(await Book.fetch(forgettable_book.id_hash)) == 0
     with pytest.raises(AlreadyForgottenError):
         await forgettable_book.forget()
 

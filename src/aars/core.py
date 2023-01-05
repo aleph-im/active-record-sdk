@@ -35,44 +35,33 @@ class Record(BaseModel, ABC):
     Records have an `indices` class attribute, which allows one to select an index and query it with a key.
     """
     forgotten: bool = False
-    _item_hash: Optional[str] = None
-    _current_revision: Optional[int] = None
+    id_hash: Optional[str] = None
+    current_revision: Optional[int] = None
     revision_hashes: List[str] = []
     __indices: ClassVar[Dict[str, 'Index']] = {}
 
-    @property
-    def item_hash(self) -> str:
-        assert self._item_hash is not None, 'Item hash not set, upsert() first'
-        return self._item_hash
-
-    @item_hash.setter
-    def item_hash(self, value: str):
-        self._item_hash = value
-
-    @property
-    def current_revision(self) -> int:
-        assert self._current_revision is not None, 'Current revision not set, upsert() first'
-        return self._current_revision
-
-    @current_revision.setter
-    def current_revision(self, value: int):
-        self._current_revision = value
-
     def __repr__(self):
-        return f'{type(self).__name__}({self.item_hash})'
+        return f'{type(self).__name__}({self.id_hash})'
+
+    def __str__(self):
+        return f'{type(self).__name__} {self.__dict__}'
 
     @property
     def content(self) -> Dict[str, Any]:
         """
         :return: content dictionary of the object, as it is to be stored on Aleph.
         """
-        return self.dict(exclude={'item_hash', 'current_revision', 'revision_hashes', 'indices', 'forgotten'})
+        return self.dict(exclude={'id_hash', 'current_revision', 'revision_hashes', 'forgotten'})
 
     async def update_revision_hashes(self: T):
         """
         Updates the list of available revision hashes, in order to fetch these.
         """
-        self.revision_hashes = [self.item_hash] + await AARS.fetch_revisions(type(self), ref=self.item_hash)
+        assert self.id_hash is not None
+        self.revision_hashes = [self.id_hash] + await AARS.fetch_revisions(type(self), ref=self.id_hash)
+        if self.current_revision is None:
+            # latest revision
+            self.current_revision = len(self.revision_hashes) - 1
 
     async def fetch_revision(self: T, rev_no: Optional[int] = None, rev_hash: Optional[str] = None) -> T:
         """
@@ -80,6 +69,9 @@ class Record(BaseModel, ABC):
         :param rev_no: the revision number of the revision to fetch.
         :param rev_hash: the hash of the revision to fetch.
         """
+        assert self.id_hash is not None, 'Cannot fetch revision of an object which has not been posted yet.'
+        assert self.current_revision is not None
+
         if rev_no is not None:
             if rev_no < 0:
                 rev_no = len(self.revision_hashes) + rev_no
@@ -99,10 +91,12 @@ class Record(BaseModel, ABC):
         else:
             raise ValueError('Either rev or hash must be provided')
 
-        self.__dict__.update((await AARS.fetch_records(
+        resp = (await AARS.fetch_records(
             type(self),
             item_hashes=[self.revision_hashes[self.current_revision]]
-        ))[0].content)
+        ))
+        content = resp[0].content
+        self.__dict__.update(content)
 
         return self
 
@@ -113,7 +107,7 @@ class Record(BaseModel, ABC):
         """
         await AARS.post_or_amend_object(self)
         if self.current_revision == 0:
-            [index.add(self) for index in self.get_indices()]
+            [index.add_record(self) for index in self.get_indices()]
         return self
 
     async def forget(self):
@@ -143,15 +137,16 @@ class Record(BaseModel, ABC):
         """
         obj = cls(**post['content'])
         if post.get('ref') is None:
-            obj._item_hash = post['item_hash']
+            obj.id_hash = post['item_hash']
         else:
-            obj._item_hash = post['ref']
+            obj.id_hash = post['ref']
         await obj.update_revision_hashes()
-        obj._current_revision = obj.revision_hashes.index(post['item_hash'])
+        assert obj.id_hash is not None
+        obj.current_revision = obj.revision_hashes.index(obj.id_hash)
         return obj
 
     @classmethod
-    async def get(cls: Type[T], hashes: Union[str, List[str]]) -> List[T]:
+    async def fetch(cls: Type[T], hashes: Union[str, List[str]]) -> List[T]:
         """
         Fetches one or more objects of given type by its/their item_hash[es].
         """
@@ -188,7 +183,7 @@ class Record(BaseModel, ABC):
         full_index_name = cls.__name__ + '.' + '.'.join(sorted_keys)
         index = cls.get_index(full_index_name)
         keys = repr(index).split('.')[1:]
-        items = await index.fetch(
+        items = await index.lookup(
             OrderedDict({key: str(sorted_items.get(key)) for key in keys})
         )
         if full_index_name != repr(index):
@@ -208,7 +203,7 @@ class Record(BaseModel, ABC):
         cls.__indices[repr(index)] = index
 
     @classmethod
-    def get_index(cls: Type[T], index_name: str) -> 'Index'[T]:
+    def get_index(cls: Type[T], index_name: str) -> 'Index[T]':
         """
         Returns an index or any of its subindices by its name. The name is defined as
         '<object_class>.[<object_properties>.]' with the properties being sorted alphabetically. For example,
@@ -283,9 +278,9 @@ class Index(Record, Generic[T]):
     def __repr__(self):
         return f"{self.datatype.__name__}.{'.'.join(self.index_on)}"
 
-    async def fetch(self, keys: Optional[Union[OrderedDict[str, str], List[OrderedDict[str, str]]]] = None) -> List[T]:
+    async def lookup(self, keys: Optional[Union[OrderedDict[str, str], List[OrderedDict[str, str]]]] = None) -> List[T]:
         """
-        Fetches records with given hash(es) from the index.
+        Fetches records with given values for the indexed properties.
 
         :param keys: The hash(es) to fetch.
         """
@@ -305,16 +300,17 @@ class Index(Record, Generic[T]):
 
         return await AARS.fetch_records(self.datatype, list([h for h in hashes if h is not None]))
 
-    def add(self, obj: T):
+    def add_record(self, obj: T):
         """Adds a record to the index."""
         assert issubclass(type(obj), Record)
-        self.hashmap[attrgetter(*self.index_on)(obj)] = obj.item_hash
+        assert obj.id_hash is not None
+        self.hashmap[attrgetter(*self.index_on)(obj)] = obj.id_hash
 
     def regenerate(self, items: List[T]):
         """Regenerates the index with given items."""
         self.hashmap = {}
         for item in items:
-            self.add(item)
+            self.add_record(item)
 
 
 class AARS:
@@ -361,20 +357,20 @@ class AARS:
         if channel is None:
             channel = cls.channel
         assert isinstance(obj, Record)
-        post_type = type(obj).__name__ if obj.item_hash is None else "amend"
+        post_type = type(obj).__name__ #if obj.id_hash is None else "amend"
         resp = await client.create_post(account=account,
                                         post_content=obj.content,
                                         post_type=post_type,
                                         channel=channel,
-                                        ref=obj.item_hash,
+                                        ref=obj.id_hash,
                                         api_server=cls.api_url,
                                         session=cls.session)
-        if obj.item_hash is None:
-            obj.item_hash = resp.item_hash
+        if obj.id_hash is None:
+            obj.id_hash = resp.item_hash
         obj.revision_hashes.append(resp.item_hash)
         obj.current_revision = len(obj.revision_hashes) - 1
         if cls.use_cache:
-            await cls.cache.set(obj.item_hash, obj.json())
+            await cls.cache.set(resp.item_hash, obj.json())
 
     @classmethod
     async def forget_objects(cls, objs: List[T], account: Optional[Account] = None, channel: Optional[str] = None):
@@ -390,7 +386,8 @@ class AARS:
             channel = cls.channel
         hashes = []
         for obj in objs:
-            hashes += [obj.item_hash] + obj.revision_hashes
+            assert obj.id_hash is not None
+            hashes += [obj.id_hash] + obj.revision_hashes
         forget_task = client.forget(account=account,
                                     hashes=hashes,
                                     reason=None,
@@ -421,7 +418,6 @@ class AARS:
         owners = None if owner is None else [owner]
         if item_hashes is None and channels is None and owners is None:
             channels = [cls.channel]
-
         if cls.use_cache:
             return await cls._fetch_record_from_cache(channels, datatype, item_hashes, owners)
 
@@ -430,7 +426,8 @@ class AARS:
                                             types=[datatype.__name__],
                                             addresses=owners,
                                             api_server=cls.api_url,
-                                            session=cls.session)
+                                            session=cls.session,
+                                            pagination=50)
         parse_tasks = [datatype.from_post(post) for post in aleph_resp['posts']]
         return list(await asyncio.gather(*parse_tasks))
 
@@ -450,7 +447,8 @@ class AARS:
                                                 types=[datatype.__name__],
                                                 addresses=owners,
                                                 api_server=cls.api_url,
-                                                session=cls.session)
+                                                session=cls.session,
+                                                pagination=50)
             parse_tasks = [datatype.from_post(post) for post in aleph_resp['posts']]
         parse_tasks = parse_tasks + [datatype.parse_raw(raw) for raw in cache_resp]
         return list(await asyncio.gather(*parse_tasks))
@@ -475,5 +473,6 @@ class AARS:
                                       types=[datatype.__name__],
                                       addresses=owners,
                                       api_server=cls.api_url,
-                                      session=cls.session)
+                                      session=cls.session,
+                                      pagination=50)
         return list(reversed([post['item_hash'] for post in resp['posts']]))  # reverse to get the oldest first

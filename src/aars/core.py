@@ -244,6 +244,8 @@ class Record(BaseModel, ABC):
 
     @classmethod
     def get_indices(cls: Type[T]) -> List['Index']:
+        if cls == Record:
+            return list(cls.__indices.values())
         return [index for index in cls.__indices.values() if index.datatype == cls]
 
     @classmethod
@@ -362,7 +364,20 @@ class AARS:
         AARS.retry_count = retry_count if retry_count else 3
 
     @classmethod
-    async def post_or_amend_object(cls, obj: T, account=None, channel=None):
+    async def sync_indices(cls):
+        """
+        Synchronizes all the indices created so far, by iteratively fetching all the messages from the channel,
+        having post_types of the Record subclasses that have been declared so far.
+        """
+        for record in Record.__subclasses__():
+            if record.get_indices():
+                await record.regenerate_indices()
+
+    @classmethod
+    async def post_or_amend_object(cls,
+                                   obj: T,
+                                   account: Optional[str] = None,
+                                   channel: Optional[str] = None) -> T:
         """
         Posts or amends an object to Aleph. If the object is already posted, it's list of revision hashes is updated and
         the object receives the latest revision number.
@@ -390,6 +405,7 @@ class AARS:
         obj.current_revision = len(obj.revision_hashes) - 1
         if cls.cache:
             await cls.cache.set(resp.item_hash, obj.json())
+        return obj
 
     @classmethod
     async def forget_objects(cls, objs: List[T], account: Optional[Account] = None, channel: Optional[str] = None):

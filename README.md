@@ -43,8 +43,10 @@ book = await Book.query(title='Atlas Shrugged')[0]
   - [x] Query with list of keys
   - [x] Update indices function
 - [x] Automatic multi-page fetching
-- [ ] Increase efficiency of API calls
 - [x] Encapsulate Aleph SDK as class
 - [x] Local VM caching
 - [x] Add tests
 - [x] Add documentation
+- [ ] Add to indexes when fetching records
+- [ ] Test query() for fetching multiple records
+- [x] Add reindexing function on AARS

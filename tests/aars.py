@@ -16,6 +16,13 @@ def event_loop():
     asyncio.run(AARS.session.close())
 
 
+@pytest.fixture(scope="session", autouse=True)
+def create_indices(request):
+    Index(Book, 'title')
+    Index(Book, ['title', 'author'])
+    Index(Library, on='name')
+
+
 class Book(Record):
     title: str
     author: str
@@ -29,7 +36,6 @@ class Library(Record):
 
 @pytest.mark.asyncio
 async def test_store_and_index():
-    Index(Book, 'title')
     new_book = await Book.create(title='Atlas Shrugged', author='Ayn Rand')
     assert new_book.title == 'Atlas Shrugged'
     assert new_book.author == 'Ayn Rand'
@@ -40,7 +46,6 @@ async def test_store_and_index():
 
 @pytest.mark.asyncio
 async def test_multi_index():
-    Index(Book, ['title', 'author'])
     new_book = await Book.create(title='Lila', author='Robert M. Pirsig', year=1991)
     # wait a few secs
     await asyncio.sleep(1)
@@ -70,7 +75,6 @@ async def test_amending_record():
 
 @pytest.mark.asyncio
 async def test_store_and_index_record_of_records():
-    Index(Library, on='name')
     books = await asyncio.gather(
         Book.create(title='Atlas Shrugged', author='Ayn Rand'),
         Book.create(title='The Martian', author='Andy Weir')
@@ -95,10 +99,21 @@ async def test_forget_object():
 
 @pytest.mark.asyncio
 async def test_store_and_wrong_query():
-    Index(Book, 'title')
     new_book = await Book.create(title='Atlas Shrugged', author='Ayn Rand')
     assert new_book.title == 'Atlas Shrugged'
     assert new_book.author == 'Ayn Rand'
     with pytest.warns(UserWarning):
         fetched_book = (await Book.query(title='Atlas Shrugged', foo="bar"))
     assert len(fetched_book) == 0
+
+
+@pytest.mark.asyncio
+@pytest.mark.skip(reason="This takes a long time")
+async def test_sync_indices():
+    await AARS.sync_indices()
+    assert len(Record.get_indices()) == 3
+    assert len(Book.get_indices()) == 2
+    assert len(Library.get_indices()) == 1
+    assert len(list(Book.get_indices()[0].hashmap.values())) > 0
+    assert len(list(Book.get_indices()[1].hashmap.values())) > 0
+    assert len(list(Library.get_indices()[0].hashmap.values())) > 0

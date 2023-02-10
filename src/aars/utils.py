@@ -1,8 +1,22 @@
 import operator
 from itertools import *
-from typing import AsyncIterator, List, TypeVar
+from typing import AsyncIterator, List, TypeVar, OrderedDict, Generic, Type
 
 T = TypeVar('T')
+
+
+class IndexQuery(OrderedDict, Generic[T]):
+    record_type: Type[T]
+
+    def __init__(self, record_type: Type[T], **kwargs):
+        super().__init__({item[0]: item[1] for item in sorted(kwargs.items())})
+        self.record_type = record_type
+
+    def get_index_name(self) -> str:
+        return self.record_type.__name__ + '.' + '.'.join(self.keys())
+
+    def get_subquery(self, keys: List[str]) -> 'IndexQuery':
+        return IndexQuery(self.record_type, **{key: arg for key, arg in self.items() if key in keys})
 
 
 def subslices(seq):

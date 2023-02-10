@@ -17,10 +17,10 @@ from aleph_client.types import Account
 from aleph_client.chains.ethereum import get_fallback_account
 from aleph_client.conf import settings
 
-from .utils import subslices, async_iterator_to_list
+from .utils import subslices, async_iterator_to_list, IndexQuery
 from .exceptions import AlreadyForgottenError
 
-T = TypeVar('T', bound='Record')
+R = TypeVar('R', bound='Record')
 
 
 class Record(BaseModel, ABC):
@@ -56,7 +56,7 @@ class Record(BaseModel, ABC):
         """
         return self.dict(exclude={'id_hash', 'current_revision', 'revision_hashes', 'forgotten'})
 
-    async def update_revision_hashes(self: T):
+    async def update_revision_hashes(self: R):
         """
         Updates the list of available revision hashes, in order to fetch these.
         """
@@ -66,7 +66,7 @@ class Record(BaseModel, ABC):
             # latest revision
             self.current_revision = len(self.revision_hashes) - 1
 
-    async def fetch_revision(self: T, rev_no: Optional[int] = None, rev_hash: Optional[str] = None) -> T:
+    async def fetch_revision(self: R, rev_no: Optional[int] = None, rev_hash: Optional[str] = None) -> R:
         """
         Fetches a revision of the object by revision number (0 => original) or revision hash.
         :param rev_no: the revision number of the revision to fetch.
@@ -119,12 +119,13 @@ class Record(BaseModel, ABC):
         """
         if not self.forgotten:
             await AARS.forget_objects([self])
+            [index.remove_record(self) for index in self.get_indices()]
             self.forgotten = True
         else:
             raise AlreadyForgottenError(self)
 
     @classmethod
-    async def from_post(cls: Type[T], post: PostMessage) -> T:
+    async def from_post(cls: Type[R], post: PostMessage) -> R:
         """
         Initializes a record object from its PostMessage.
         :param post: the PostMessage to initialize from.
@@ -140,7 +141,7 @@ class Record(BaseModel, ABC):
         return obj
 
     @classmethod
-    async def from_dict(cls: Type[T], post: Dict[str, Any]) -> T:
+    async def from_dict(cls: Type[R], post: Dict[str, Any]) -> R:
         """
         Initializes a record object from its raw Aleph data.
         :post: Raw Aleph data.
@@ -156,7 +157,7 @@ class Record(BaseModel, ABC):
         return obj
 
     @classmethod
-    async def fetch(cls: Type[T], hashes: Union[str, List[str]]) -> List[T]:
+    async def fetch(cls: Type[R], hashes: Union[str, List[str]]) -> List[R]:
         """
         Fetches one or more objects of given type by its/their item_hash[es].
         """
@@ -165,14 +166,14 @@ class Record(BaseModel, ABC):
         return await async_iterator_to_list(AARS.fetch_records(cls, list(hashes)))
 
     @classmethod
-    async def fetch_all(cls: Type[T]) -> List[T]:
+    async def fetch_all(cls: Type[R]) -> List[R]:
         """
         Fetches all objects of given type.
         """
         return await async_iterator_to_list(AARS.fetch_records(cls))
 
     @classmethod
-    async def query(cls: Type[T], **kwargs) -> List[T]:
+    async def where_eq(cls: Type[R], **kwargs) -> List[R]:
         """
         Queries an object by given properties through an index, in order to fetch applicable records.
         An index name is defined as '<object_class>.[<object_properties>.]' and is initialized by creating
@@ -182,43 +183,26 @@ class Record(BaseModel, ABC):
 
         This will create an index named 'MyRecord.property1.property2' which can be queried with:
 
-        >>> MyRecord.query(property1='value1', property2='value2')
+        >>> MyRecord.where_eq(property1='value1', property2='value2')
 
         If no index is defined for the given properties, an IndexError is raised.
 
         If only a part of the keys is indexed for the given query, a fallback index is used and locally filtered.
         """
-        sorted_kwargs: OrderedDict[str, Any] = OrderedDict(sorted(kwargs.items()))
-        sorted_keys = sorted_kwargs.keys()
-        full_index_name = cls.__name__ + '.' + '.'.join(sorted_keys)
-        index = cls.get_index(full_index_name)
-        keys = repr(index).split('.')[1:]
-        items = await index.lookup(
-            OrderedDict({key: str(sorted_kwargs.get(key)) for key in keys})
-        )
-        if full_index_name != repr(index):
-            return await cls._filter_index_items(items, sorted_kwargs)
-        else:
-            return items
+        query = IndexQuery(cls, **kwargs)
+        index = cls.get_index(query.get_index_name())
+        return await index.lookup(query)
 
     @classmethod
-    async def _filter_index_items(cls, items, sorted_kwargs):
-        sorted_keys = sorted_kwargs.keys()
-        filtered_items = list()
-        for item in items:
-            # eliminate the item which does not fulfill the properties
-            class_properties = vars(item)
-            required_class_properties = {key: class_properties.get(key) for key in sorted_keys}
-            if required_class_properties == dict(sorted_kwargs):
-                filtered_items.append(item)
-        return filtered_items
+    async def where_gte(cls: Type[R], **kwargs) -> List[R]:
+        raise NotImplementedError()
 
     @classmethod
-    def add_index(cls: Type[T], index: 'Index') -> None:
+    def add_index(cls: Type[R], index: 'Index') -> None:
         cls.__indices[repr(index)] = index
 
     @classmethod
-    def get_index(cls: Type[T], index_name: str) -> 'Index[T]':
+    def get_index(cls: Type[R], index_name: str) -> 'Index[R]':
         """
         Returns an index or any of its subindices by its name. The name is defined as
         '<object_class>.[<object_properties>.]' with the properties being sorted alphabetically. For example,
@@ -240,36 +224,36 @@ class Record(BaseModel, ABC):
         return index
 
     @classmethod
-    def get_indices(cls: Type[T]) -> List['Index']:
+    def get_indices(cls: Type[R]) -> List['Index']:
         if cls == Record:
             return list(cls.__indices.values())
-        return [index for index in cls.__indices.values() if index.datatype == cls]
+        return [index for index in cls.__indices.values() if index.record_type == cls]
 
     @classmethod
-    async def save_indices(cls: Type[T]) -> None:
+    async def save_indices(cls: Type[R]) -> None:
         """Updates all indices of given type."""
         tasks = [index.save() for index in cls.get_indices()]
         await asyncio.gather(*tasks)
 
     @classmethod
-    async def regenerate_indices(cls: Type[T]) -> None:
+    async def regenerate_indices(cls: Type[R]) -> None:
         """Regenerates all indices of given type."""
         items = await cls.fetch_all()
         for index in cls.get_indices():
             index.regenerate(items)
 
 
-class Index(Record, Generic[T]):
+class Index(Record, Generic[R]):
     """
     Class to define Indices.
     """
-    datatype: Type[T]
+    record_type: Type[R]
     index_on: List[str]
-    hashmap: Dict[Union[str, Tuple], str] = {}
+    hashmap: Dict[Tuple, Set[str]] = {}
 
-    def __init__(self, datatype: Type[T], on: Union[str, List[str], Tuple[str]]):
+    def __init__(self, record_type: Type[R], on: Union[str, List[str], Tuple[str]]):
         """
-        Creates a new index given a datatype and a single or multiple properties to index on.
+        Creates a new index given a record_type and a single or multiple properties to index on.
 
         >>> Index(MyRecord, 'foo')
 
@@ -281,49 +265,75 @@ class Index(Record, Generic[T]):
 
         This returns all records of type MyRecord where foo is equal to 'bar'.
 
-        :param datatype: The datatype to index.
+        :param record_type: The record_type to index.
         :param on: The properties to index on.
         """
         if isinstance(on, str):
             on = [on]
-        super(Index, self).__init__(datatype=datatype, index_on=sorted(on))
-        datatype.add_index(self)
+        super(Index, self).__init__(record_type=record_type, index_on=sorted(on))
+        record_type.add_index(self)
 
     def __str__(self):
-        return f"Index({self.datatype.__name__}.{'.'.join(self.index_on)})"
+        return f"Index({self.record_type.__name__}.{'.'.join(self.index_on)})"
 
     def __repr__(self):
-        return f"{self.datatype.__name__}.{'.'.join(self.index_on)}"
+        return f"{self.record_type.__name__}.{'.'.join(self.index_on)}"
 
-    async def lookup(self, keys: Optional[Union[OrderedDict[str, str], List[OrderedDict[str, str]]]] = None) -> List[T]:
+    async def lookup(self, query: IndexQuery) -> List[R]:
         """
         Fetches records with given values for the indexed properties.
 
-        :param keys: The hash(es) to fetch.
+        :param query: The query to lookup items with.
         """
-        hashes: Set[Optional[str]]
-        if keys is None:
-            hashes = set(self.hashmap.values())
-        elif isinstance(keys, OrderedDict):
-            if len(keys.values()) == 1:
-                hashes = {self.hashmap.get(list(keys.values())[0])}
-            else:
-                # noinspection PySetFunctionToLiteral
-                hashes = set([self.hashmap.get(tuple(keys.values())), ])
-        elif isinstance(keys, List):
-            hashes = set([self.hashmap.get(tuple(key.values())) for key in keys])
+        assert query.record_type == self.record_type
+        id_hashes: Optional[Set[str]]
+        needs_filtering = False
+
+        if len(self.index_on) == 1:
+            assert (list(query.keys())[0]) == self.index_on[0]
+            id_hashes = self.hashmap.get(tuple(query.values()))
         else:
-            hashes = set()
+            subquery = query
+            if repr(self) != query.get_index_name():
+                subquery = query.get_subquery(self.index_on)
+                needs_filtering = True
+            id_hashes = self.hashmap.get(tuple(subquery.values()))
 
-        return await async_iterator_to_list(AARS.fetch_records(self.datatype, list([h for h in hashes if h is not None])))
+        if id_hashes is None:
+            return []
 
-    def add_record(self, obj: T):
+        items = await async_iterator_to_list(AARS.fetch_records(self.record_type, list(id_hashes)))
+
+        if needs_filtering:
+            return self._filter_index_items(items, query)
+        return items
+
+    @classmethod
+    def _filter_index_items(cls, items: List[R], query: IndexQuery) -> List[R]:
+        sorted_keys = query.keys()
+        filtered_items = list()
+        for item in items:
+            # eliminate the item which does not fulfill the properties
+            class_properties = vars(item)
+            required_class_properties = {key: class_properties.get(key) for key in sorted_keys}
+            if required_class_properties == dict(query):
+                filtered_items.append(item)
+        return filtered_items
+
+    def add_record(self, obj: R):
         """Adds a record to the index."""
         assert issubclass(type(obj), Record)
         assert obj.id_hash is not None
-        self.hashmap[attrgetter(*self.index_on)(obj)] = obj.id_hash
+        key = attrgetter(*self.index_on)(obj)
+        self.hashmap[key].add(obj.id_hash)
 
-    def regenerate(self, items: List[T]):
+    def remove_record(self, obj: R):
+        """Removes a record from the index, i.e. when it is forgotten."""
+        assert obj.id_hash is not None
+        key = attrgetter(*self.index_on)(obj)
+        self.hashmap[key].remove(obj.id_hash)
+
+    def regenerate(self, items: List[R]):
         """Regenerates the index with given items."""
         self.hashmap = {}
         for item in items:
@@ -372,9 +382,9 @@ class AARS:
 
     @classmethod
     async def post_or_amend_object(cls,
-                                   obj: T,
+                                   obj: R,
                                    account: Optional[str] = None,
-                                   channel: Optional[str] = None) -> T:
+                                   channel: Optional[str] = None) -> R:
         """
         Posts or amends an object to Aleph. If the object is already posted, it's list of revision hashes is updated and
         the object receives the latest revision number.
@@ -405,7 +415,7 @@ class AARS:
         return obj
 
     @classmethod
-    async def forget_objects(cls, objs: List[T], account: Optional[Account] = None, channel: Optional[str] = None):
+    async def forget_objects(cls, objs: List[R], account: Optional[Account] = None, channel: Optional[str] = None):
         """
         Forgets multiple objects from Aleph and local cache. All related revisions will be forgotten too.
         :param objs: The objects to forget.
@@ -436,26 +446,26 @@ class AARS:
 
     @classmethod
     async def fetch_records(cls,
-                            datatype: Type[T],
+                            record_type: Type[R],
                             item_hashes: Optional[List[str]] = None,
                             channel: Optional[str] = None,
-                            owner: Optional[str] = None) -> AsyncIterator[T]:
+                            owner: Optional[str] = None) -> AsyncIterator[R]:
         """
         Retrieves posts as objects by its aleph item_hash.
 
-        :param datatype: The type of the objects to retrieve.
+        :param record_type: The type of the objects to retrieve.
         :param item_hashes: Aleph item_hashes of the objects to fetch.
         :param channel: Channel in which to look for it.
         :param owner: Account that owns the object.
         """
-        assert issubclass(datatype, Record)
+        assert issubclass(record_type, Record)
         channels = None if channel is None else [channel]
         owners = None if owner is None else [owner]
         if item_hashes is None and channels is None and owners is None:
             channels = [cls.channel]
 
         if cls.cache and item_hashes is not None:
-            records = await cls._fetch_records_from_cache(datatype, item_hashes)
+            records = await cls._fetch_records_from_cache(record_type, item_hashes)
             cached_ids = []
             for r in records:
                 cached_ids.append(r.id_hash)
@@ -464,33 +474,33 @@ class AARS:
             if len(item_hashes) == 0:
                 return
 
-        async for record in cls._fetch_records_from_api(datatype=datatype,
+        async for record in cls._fetch_records_from_api(record_type=record_type,
                                                         item_hashes=item_hashes,
                                                         channels=channels,
                                                         owners=owners):
             yield record
 
     @classmethod
-    async def _fetch_records_from_cache(cls, datatype: Type[T], item_hashes: List[str]) -> List[T]:
+    async def _fetch_records_from_cache(cls, record_type: Type[R], item_hashes: List[str]) -> List[R]:
         assert cls.cache
         raw_records = await asyncio.gather(*[cls.cache.get(h) for h in item_hashes])
-        return [datatype.parse_raw(r) for r in raw_records if r is not None]
+        return [record_type.parse_raw(r) for r in raw_records if r is not None]
 
     @classmethod
     async def _fetch_records_from_api(cls,
-                                      datatype: Type[T],
+                                      record_type: Type[R],
                                       item_hashes: Optional[List[str]] = None,
                                       channels: Optional[List[str]] = None,
                                       owners: Optional[List[str]] = None,
                                       refs: Optional[List[str]] = None,
-                                      page=1) -> AsyncIterator[T]:
+                                      page=1) -> AsyncIterator[R]:
         aleph_resp = None
         retries = cls.retry_count
         while aleph_resp is None:
             try:
                 aleph_resp = await client.get_posts(hashes=item_hashes,
                                                     channels=channels,
-                                                    types=[datatype.__name__],
+                                                    types=[record_type.__name__],
                                                     addresses=owners,
                                                     refs=refs,
                                                     api_server=cls.api_url,
@@ -502,7 +512,7 @@ class AARS:
                 if retries == 0:
                     raise
         for post in aleph_resp['posts']:
-            yield await datatype.from_dict(post)
+            yield await record_type.from_dict(post)
 
         if page == 1:
             # If there are more pages, fetch them
@@ -511,7 +521,7 @@ class AARS:
             if total_items > per_page:
                 for next_page in range(2, math.ceil(total_items / per_page) + 1):
                     async for record in cls._fetch_records_from_api(
-                            datatype=datatype,
+                            record_type=record_type,
                             item_hashes=item_hashes,
                             channels=channels,
                             owners=owners,
@@ -521,13 +531,13 @@ class AARS:
 
     @classmethod
     async def fetch_revisions(cls,
-                              datatype: Type[T],
+                              record_type: Type[R],
                               ref: str,
                               channel: Optional[str] = None,
                               owner: Optional[str] = None,
                               page=1) -> AsyncIterator[str]:
         """Retrieves posts of revisions of an object by its item_hash.
-        :param datatype: The type of the objects to retrieve.
+        :param record_type: The type of the objects to retrieve.
         :param ref: item_hash of the object, whose revisions to fetch.
         :param channel: Channel in which to look for it.
         :param owner: Account that owns the object.
@@ -561,7 +571,7 @@ class AARS:
             if total_items > per_page:
                 for next_page in range(2, math.ceil(total_items / per_page) + 1):
                     async for item_hash in cls.fetch_revisions(
-                            datatype=datatype,
+                            record_type=record_type,
                             ref=ref,
                             channel=channel,
                             owner=owner,
@@ -570,16 +580,16 @@ class AARS:
 
     @classmethod
     async def fetch_exact(cls,
-                          datatype: Type[T],
-                          item_hash: str) -> T:
+                          record_type: Type[R],
+                          item_hash: str) -> R:
         """Retrieves the revision of an object by its item_hash of the message. The content will be exactly the same
         as in the referenced message, so no amendments will be applied.
 
         :param item_hash:
-        :param datatype: The type of the objects to retrieve.
+        :param record_type: The type of the objects to retrieve.
         """
         if cls.cache:
-            cache_resp = await cls._fetch_records_from_cache(datatype, [item_hash])
+            cache_resp = await cls._fetch_records_from_cache(record_type, [item_hash])
             if len(cache_resp) > 0:
                 return cache_resp[0]
         aleph_resp = await client.get_messages(hashes=[item_hash],
@@ -588,4 +598,4 @@ class AARS:
         if len(aleph_resp.messages) == 0:
             raise ValueError(f"Message with hash {item_hash} not found.")
         message: PostMessage = aleph_resp.messages[0]
-        return await datatype.from_post(message)
+        return await record_type.from_post(message)

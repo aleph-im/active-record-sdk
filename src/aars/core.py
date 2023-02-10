@@ -27,7 +27,7 @@ class Record(BaseModel, ABC):
     """
     A basic record which is persisted on Aleph decentralized storage.
 
-    Records can be updated: revision numbers begin at 0 (original upload) and increment for each `upsert()` call.
+    Records can be updated: revision numbers begin at 0 (original upload) and increment for each `save()` call.
 
     Previous revisions can be restored by calling `fetch_revision(rev_no=<number>)` or `fetch_revision(
     rev_hash=<item_hash of inserted update>)`.
@@ -109,8 +109,12 @@ class Record(BaseModel, ABC):
         """
         await AARS.post_or_amend_object(self)
         if self.current_revision == 0:
-            [index.add_record(self) for index in self.get_indices()]
+            self._index()
         return self
+
+    def _index(self):
+        for index in self.get_indices():
+            index.add_record(self)
 
     async def forget(self):
         """
@@ -157,20 +161,33 @@ class Record(BaseModel, ABC):
         return obj
 
     @classmethod
-    async def fetch(cls: Type[R], hashes: Union[str, List[str]]) -> List[R]:
+    async def fetch(cls: Type[R], hashes: Union[str, List[str]], regenerate_index=False) -> List[R]:
         """
         Fetches one or more objects of given type by its/their item_hash[es].
         """
         if not isinstance(hashes, List):
             hashes = [hashes]
-        return await async_iterator_to_list(AARS.fetch_records(cls, list(hashes)))
+        items = await async_iterator_to_list(AARS.fetch_records(cls, list(hashes)))
+        if regenerate_index:
+            for item in items:
+                item._index()
+        return items
 
     @classmethod
-    async def fetch_all(cls: Type[R]) -> List[R]:
+    async def fetch_all(cls: Type[R], regenerate_index=False) -> List[R]:
         """
         Fetches all objects of given type.
+
+        WARNING: This can take quite some time, depending on the amount of records to be fetched.
+
+        :param regenerate_index: If set to `True`, will (re-)add all items to the existing indices.
+        :return: All items of class type.
         """
-        return await async_iterator_to_list(AARS.fetch_records(cls))
+        items = await async_iterator_to_list(AARS.fetch_records(cls))
+        if regenerate_index:
+            for item in items:
+                item._index()
+        return items
 
     @classmethod
     async def where_eq(cls: Type[R], **kwargs) -> List[R]:
@@ -192,10 +209,6 @@ class Record(BaseModel, ABC):
         query = IndexQuery(cls, **kwargs)
         index = cls.get_index(query.get_index_name())
         return await index.lookup(query)
-
-    @classmethod
-    async def where_gte(cls: Type[R], **kwargs) -> List[R]:
-        raise NotImplementedError()
 
     @classmethod
     def add_index(cls: Type[R], index: 'Index') -> None:
@@ -236,11 +249,13 @@ class Record(BaseModel, ABC):
         await asyncio.gather(*tasks)
 
     @classmethod
-    async def regenerate_indices(cls: Type[R]) -> None:
-        """Regenerates all indices of given type."""
-        items = await cls.fetch_all()
-        for index in cls.get_indices():
-            index.regenerate(items)
+    async def regenerate_indices(cls: Type[R]) -> List[R]:
+        """
+        Regenerates all indices of given type.
+
+        WARNING: This can take quite some time, depending on the amount of records to be fetched.
+        """
+        return await cls.fetch_all(regenerate_index=True)
 
 
 class Index(Record, Generic[R]):
@@ -258,10 +273,10 @@ class Index(Record, Generic[R]):
         >>> Index(MyRecord, 'foo')
 
         This will create an index named 'MyRecord.foo', which is stored in the `MyRecord` class.
-        It is not recommended using the index directly, but rather through the `query` method of the `Record` class like
+        It is not recommended using the index directly, but rather through the `where_eq` method of the `Record` class like
         so:
 
-        >>> MyRecord.query(foo='bar')
+        >>> MyRecord.where_eq(foo='bar')
 
         This returns all records of type MyRecord where foo is equal to 'bar'.
 

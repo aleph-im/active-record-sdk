@@ -42,11 +42,16 @@ book = await Book.query(title='Atlas Shrugged')[0]
   - [x] Multi-key indexing
   - [x] Query with list of keys
   - [x] Update indices function
+  - [x] Allow multiple items to share one index key
+  - [ ] Add more comparators for where_() queries
+    - [ ] where_gte()
+    - [ ] where_lte()query
+    - [ ] where_contains()
 - [x] Automatic multi-page fetching
 - [x] Encapsulate Aleph SDK as class
 - [x] Local VM caching
 - [x] Add tests
 - [x] Add documentation
-- [ ] Add to indexes when fetching records
-- [ ] Test query() for fetching multiple records
+- [x] Add to indices when fetching records
+- [x] Test where_eq() for fetching multiple records
 - [x] Add reindexing function on AARS

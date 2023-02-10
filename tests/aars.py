@@ -36,7 +36,7 @@ class Library(Record):
 
 @pytest.mark.asyncio
 async def test_store_and_index():
-    new_book = await Book.create(title='Atlas Shrugged', author='Ayn Rand')
+    new_book = await Book(title='Atlas Shrugged', author='Ayn Rand').save()
     assert new_book.title == 'Atlas Shrugged'
     assert new_book.author == 'Ayn Rand'
     await asyncio.sleep(1)
@@ -46,7 +46,7 @@ async def test_store_and_index():
 
 @pytest.mark.asyncio
 async def test_multi_index():
-    new_book = await Book.create(title='Lila', author='Robert M. Pirsig', year=1991)
+    new_book = await Book(title='Lila', author='Robert M. Pirsig', year=1991).save()
     # wait a few secs
     await asyncio.sleep(1)
     should_be_none = (await Book.query(title='Lila', author='Yo Momma'))
@@ -57,10 +57,10 @@ async def test_multi_index():
 
 @pytest.mark.asyncio
 async def test_amending_record():
-    book = await Book.create(title='Neurodancer', author='William Gibson')
+    book = await Book(title='Neurodancer', author='William Gibson').save()
     assert book.current_revision == 0
     book.title = 'Neuromancer'
-    book = await book.upsert()
+    book = await book.save()
     assert book.title == 'Neuromancer'
     assert len(book.revision_hashes) == 2
     assert book.current_revision == 1
@@ -76,10 +76,10 @@ async def test_amending_record():
 @pytest.mark.asyncio
 async def test_store_and_index_record_of_records():
     books = await asyncio.gather(
-        Book.create(title='Atlas Shrugged', author='Ayn Rand'),
-        Book.create(title='The Martian', author='Andy Weir')
+        Book(title='Atlas Shrugged', author='Ayn Rand').save(),
+        Book(title='The Martian', author='Andy Weir').save()
     )
-    new_library = await Library.create(name='The Library', books=books)
+    new_library = await Library(name='The Library', books=books).save()
     await asyncio.sleep(1)
     fetched_library = (await Library.query(name='The Library'))[0]
     assert new_library == fetched_library
@@ -87,7 +87,7 @@ async def test_store_and_index_record_of_records():
 
 @pytest.mark.asyncio
 async def test_forget_object():
-    forgettable_book = await Book.create(title="The Forgotten Book", author="Mechthild Gläser")  # I'm sorry.
+    forgettable_book = await Book(title="The Forgotten Book", author="Mechthild Gläser").save()  # I'm sorry.
     await asyncio.sleep(1)
     await forgettable_book.forget()
     assert forgettable_book.forgotten is True
@@ -99,7 +99,7 @@ async def test_forget_object():
 
 @pytest.mark.asyncio
 async def test_store_and_wrong_query():
-    new_book = await Book.create(title='Atlas Shrugged', author='Ayn Rand')
+    new_book = await Book(title='Atlas Shrugged', author='Ayn Rand').save()
     assert new_book.title == 'Atlas Shrugged'
     assert new_book.author == 'Ayn Rand'
     with pytest.warns(UserWarning):

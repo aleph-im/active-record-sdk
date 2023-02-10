@@ -9,7 +9,7 @@ from typing import Type, TypeVar, Dict, ClassVar, List, Set, Any, Union, Tuple, 
 import aiohttp
 from aiohttp import ServerDisconnectedError
 from aleph_client.vm.cache import VmCache
-from aleph_message.models import PostMessage, BaseMessage
+from aleph_message.models import PostMessage
 from pydantic import BaseModel
 
 import aleph_client.asynchronous as client
@@ -102,10 +102,10 @@ class Record(BaseModel, ABC):
 
         return self
 
-    async def upsert(self):
+    async def save(self):
         """
         Posts a new item to Aleph or amends it, if it was already posted. Will add new items to local indices.
-        For indices to be persisted on Aleph, you need to call `upsert()` on the index itself or `cls.update_indices()`.
+        For indices to be persisted on Aleph, you need to call `save()` on the index itself or `cls.save_indices()`.
         """
         await AARS.post_or_amend_object(self)
         if self.current_revision == 0:
@@ -122,14 +122,6 @@ class Record(BaseModel, ABC):
             self.forgotten = True
         else:
             raise AlreadyForgottenError(self)
-
-    @classmethod
-    async def create(cls: Type[T], **kwargs) -> T:
-        """
-        Initializes and uploads a new item with given properties.
-        """
-        obj = cls(**kwargs)
-        return await obj.upsert()
 
     @classmethod
     async def from_post(cls: Type[T], post: PostMessage) -> T:
@@ -196,25 +188,30 @@ class Record(BaseModel, ABC):
 
         If only a part of the keys is indexed for the given query, a fallback index is used and locally filtered.
         """
-        sorted_items: OrderedDict[str, Any] = OrderedDict(sorted(kwargs.items()))
-        sorted_keys = sorted_items.keys()
+        sorted_kwargs: OrderedDict[str, Any] = OrderedDict(sorted(kwargs.items()))
+        sorted_keys = sorted_kwargs.keys()
         full_index_name = cls.__name__ + '.' + '.'.join(sorted_keys)
         index = cls.get_index(full_index_name)
         keys = repr(index).split('.')[1:]
         items = await index.lookup(
-            OrderedDict({key: str(sorted_items.get(key)) for key in keys})
+            OrderedDict({key: str(sorted_kwargs.get(key)) for key in keys})
         )
         if full_index_name != repr(index):
-            filtered_items = list()
-            for item in items:
-                # eliminate the item which does not fulfill this properties
-                class_properties = vars(item)
-                required_class_properties = {key: class_properties.get(key) for key in sorted_keys}
-                if required_class_properties == dict(sorted_items):
-                    filtered_items.append(item)
-            return filtered_items
+            return await cls._filter_index_items(items, sorted_kwargs)
         else:
             return items
+
+    @classmethod
+    async def _filter_index_items(cls, items, sorted_kwargs):
+        sorted_keys = sorted_kwargs.keys()
+        filtered_items = list()
+        for item in items:
+            # eliminate the item which does not fulfill the properties
+            class_properties = vars(item)
+            required_class_properties = {key: class_properties.get(key) for key in sorted_keys}
+            if required_class_properties == dict(sorted_kwargs):
+                filtered_items.append(item)
+        return filtered_items
 
     @classmethod
     def add_index(cls: Type[T], index: 'Index') -> None:
@@ -249,9 +246,9 @@ class Record(BaseModel, ABC):
         return [index for index in cls.__indices.values() if index.datatype == cls]
 
     @classmethod
-    async def update_indices(cls: Type[T]) -> None:
+    async def save_indices(cls: Type[T]) -> None:
         """Updates all indices of given type."""
-        tasks = [index.upsert() for index in cls.get_indices()]
+        tasks = [index.save() for index in cls.get_indices()]
         await asyncio.gather(*tasks)
 
     @classmethod

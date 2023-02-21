@@ -199,8 +199,8 @@ class Record(BaseModel, ABC):
     @classmethod
     async def fetch_all(
         cls: Type[R],
-        pagination: int = 10,
-        page: int = 1,
+        page_size: Optional[int] = None,
+        page: Optional[int] = None,
         regenerate_index: bool = False,
     ) -> List[R]:
         """
@@ -208,12 +208,15 @@ class Record(BaseModel, ABC):
 
         WARNING: This can take quite some time, depending on the amount of records to be fetched.
 
-        :param page:
-        :param pagination:
+        :param page: If set, will fetch records of given page.
+        :param page_size: If set, will fetch records in pages of given size. Requires `page` to be set.
         :param regenerate_index: If set to `True`, will (re-)add all items to the existing indices.
         :return: All items of class type.
         """
-        items = await async_iterator_to_list(AARS.fetch_records(cls))
+        if page_size is not None and page is not None:
+            items = await async_iterator_to_list(AARS.fetch_records(cls, page_size=page_size, page=page), page_size)
+        else:
+            items = await async_iterator_to_list(AARS.fetch_records(cls))
         if regenerate_index:
             for item in items:
                 item._index()
@@ -335,15 +338,11 @@ class Index(Record, Generic[R]):
         id_hashes: Optional[Set[str]]
         needs_filtering = False
 
-        if len(self.index_on) == 1:
-            assert (list(query.keys())[0]) == self.index_on[0]
-            id_hashes = self.hashmap.get(tuple(query.values()))
-        else:
-            subquery = query
-            if repr(self) != query.get_index_name():
-                subquery = query.get_subquery(self.index_on)
-                needs_filtering = True
-            id_hashes = self.hashmap.get(tuple(subquery.values()))
+        subquery = query
+        if repr(self) != query.get_index_name():
+            subquery = query.get_subquery(self.index_on)
+            needs_filtering = True
+        id_hashes = self.hashmap.get(tuple(subquery.values()))
 
         if id_hashes is None:
             return []
@@ -375,13 +374,20 @@ class Index(Record, Generic[R]):
         assert issubclass(type(obj), Record)
         assert obj.id_hash is not None
         key = attrgetter(*self.index_on)(obj)
+        if isinstance(key, str):
+            key = (key,)
+        if key not in self.hashmap:
+            self.hashmap[key] = set()
         self.hashmap[key].add(obj.id_hash)
 
     def remove_record(self, obj: R):
         """Removes a record from the index, i.e. when it is forgotten."""
         assert obj.id_hash is not None
         key = attrgetter(*self.index_on)(obj)
-        self.hashmap[key].remove(obj.id_hash)
+        if isinstance(key, str):
+            key = (key,)
+        if key in self.hashmap:
+            self.hashmap[key].remove(obj.id_hash)
 
     def regenerate(self, items: List[R]):
         """Regenerates the index with given items."""
@@ -508,6 +514,8 @@ class AARS:
         item_hashes: Optional[List[str]] = None,
         channel: Optional[str] = None,
         owner: Optional[str] = None,
+        page_size: Optional[int] = None,
+        page: Optional[int] = None,
     ) -> AsyncIterator[R]:
         """
         Retrieves posts as objects by its aleph item_hash.
@@ -516,6 +524,8 @@ class AARS:
         :param item_hashes: Aleph item_hashes of the objects to fetch.
         :param channel: Channel in which to look for it.
         :param owner: Account that owns the object.
+        :param page_size: Number of items to fetch per page.
+        :param page: Page number to fetch, based on page_size.
         """
         assert issubclass(record_type, Record)
         channels = None if channel is None else [channel]
@@ -524,6 +534,7 @@ class AARS:
             channels = [cls.channel]
 
         if cls.cache and item_hashes is not None:
+            # TODO: Add some kind of caching for channels and owners or add recent item_hashes endpoint to the Aleph API
             records = await cls._fetch_records_from_cache(record_type, item_hashes)
             cached_ids = []
             for r in records:
@@ -533,11 +544,15 @@ class AARS:
             if len(item_hashes) == 0:
                 return
 
+        page_size = page_size if page_size else 50
+        page = page if page else 1
         async for record in cls._fetch_records_from_api(
             record_type=record_type,
             item_hashes=item_hashes,
             channels=channels,
             owners=owners,
+            page_size=page_size,
+            page=page,
         ):
             yield record
 
@@ -557,7 +572,8 @@ class AARS:
         channels: Optional[List[str]] = None,
         owners: Optional[List[str]] = None,
         refs: Optional[List[str]] = None,
-        page=1,
+        page_size: int = 50,
+        page: int = 1,
     ) -> AsyncIterator[R]:
         aleph_resp = None
         retries = cls.retry_count
@@ -571,7 +587,7 @@ class AARS:
                     refs=refs,
                     api_server=cls.api_url,
                     session=cls.session,
-                    pagination=50,
+                    pagination=page_size,
                     page=page,
                 )
             except ServerDisconnectedError:

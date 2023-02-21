@@ -108,6 +108,15 @@ async def test_store_and_wrong_where_eq():
 
 
 @pytest.mark.asyncio
+async def test_fetch_all_pagination():
+    page_one = await Book.fetch_all(page_size=1, page=1)
+    page_two = await Book.fetch_all(page_size=1, page=2)
+    assert len(page_one) == 1
+    assert len(page_two) == 1
+    assert page_one[0] != page_two[0]
+
+
+@pytest.mark.asyncio
 @pytest.mark.skip(reason="This takes a long time")
 async def test_sync_indices():
     await AARS.sync_indices()

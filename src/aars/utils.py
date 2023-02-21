@@ -1,6 +1,6 @@
 import operator
 from itertools import *
-from typing import AsyncIterator, List, TypeVar, OrderedDict, Generic, Type
+from typing import AsyncIterator, List, TypeVar, OrderedDict, Generic, Type, Optional
 
 T = TypeVar("T")
 
@@ -44,8 +44,16 @@ def possible_index_names(seq):
     return map(".".join, subslices(seq))
 
 
-async def async_iterator_to_list(iterator: AsyncIterator[T]) -> List[T]:
+async def async_iterator_to_list(iterator: AsyncIterator[T], count: Optional[int] = None) -> List[T]:
     """
     Return a list from an async iterator.
     """
-    return [item async for item in iterator]
+    if count is None:
+        return [item async for item in iterator]
+    else:
+        items = []
+        async for item in iterator:
+            items.append(item)
+            if len(items) == count:
+                break
+        return items

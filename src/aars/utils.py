@@ -2,7 +2,7 @@ import operator
 from itertools import *
 from typing import AsyncIterator, List, TypeVar, OrderedDict, Generic, Type
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class IndexQuery(OrderedDict, Generic[T]):
@@ -13,10 +13,12 @@ class IndexQuery(OrderedDict, Generic[T]):
         self.record_type = record_type
 
     def get_index_name(self) -> str:
-        return self.record_type.__name__ + '.' + '.'.join(self.keys())
+        return self.record_type.__name__ + "." + ".".join(self.keys())
 
-    def get_subquery(self, keys: List[str]) -> 'IndexQuery':
-        return IndexQuery(self.record_type, **{key: arg for key, arg in self.items() if key in keys})
+    def get_subquery(self, keys: List[str]) -> "IndexQuery":
+        return IndexQuery(
+            self.record_type, **{key: arg for key, arg in self.items() if key in keys}
+        )
 
 
 def subslices(seq):
@@ -39,7 +41,7 @@ def possible_index_names(seq):
     Example:
         list(possible_index_names(['A', 'B', 'C'])) == [['A'], ['A.B'], ['A.B.C'], ['B'], ['B.C'], ['C']]
     """
-    return map('.'.join, subslices(seq))
+    return map(".".join, subslices(seq))
 
 
 async def async_iterator_to_list(iterator: AsyncIterator[T]) -> List[T]:

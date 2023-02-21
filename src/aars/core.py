@@ -4,7 +4,20 @@ import warnings
 from abc import ABC
 from collections import OrderedDict
 from operator import attrgetter
-from typing import Type, TypeVar, Dict, ClassVar, List, Set, Any, Union, Tuple, Optional, Generic, AsyncIterator
+from typing import (
+    Type,
+    TypeVar,
+    Dict,
+    ClassVar,
+    List,
+    Set,
+    Any,
+    Union,
+    Tuple,
+    Optional,
+    Generic,
+    AsyncIterator,
+)
 
 import aiohttp
 from aiohttp import ServerDisconnectedError
@@ -20,7 +33,7 @@ from aleph_client.conf import settings
 from .utils import subslices, async_iterator_to_list, IndexQuery
 from .exceptions import AlreadyForgottenError
 
-R = TypeVar('R', bound='Record')
+R = TypeVar("R", bound="Record")
 
 
 class Record(BaseModel, ABC):
@@ -37,42 +50,51 @@ class Record(BaseModel, ABC):
 
     Records have an `indices` class attribute, which allows one to select an index and query it with a key.
     """
+
     forgotten: bool = False
     id_hash: Optional[str] = None
     current_revision: Optional[int] = None
     revision_hashes: List[str] = []
-    __indices: ClassVar[Dict[str, 'Index']] = {}
+    __indices: ClassVar[Dict[str, "Index"]] = {}
 
     def __repr__(self):
-        return f'{type(self).__name__}({self.id_hash})'
+        return f"{type(self).__name__}({self.id_hash})"
 
     def __str__(self):
-        return f'{type(self).__name__} {self.__dict__}'
+        return f"{type(self).__name__} {self.__dict__}"
 
     @property
     def content(self) -> Dict[str, Any]:
         """
         :return: content dictionary of the object, as it is to be stored on Aleph.
         """
-        return self.dict(exclude={'id_hash', 'current_revision', 'revision_hashes', 'forgotten'})
+        return self.dict(
+            exclude={"id_hash", "current_revision", "revision_hashes", "forgotten"}
+        )
 
     async def update_revision_hashes(self: R):
         """
         Updates the list of available revision hashes, in order to fetch these.
         """
         assert self.id_hash is not None
-        self.revision_hashes = [self.id_hash] + await async_iterator_to_list(AARS.fetch_revisions(type(self), ref=self.id_hash))
+        self.revision_hashes = [self.id_hash] + await async_iterator_to_list(
+            AARS.fetch_revisions(type(self), ref=self.id_hash)
+        )
         if self.current_revision is None:
             # latest revision
             self.current_revision = len(self.revision_hashes) - 1
 
-    async def fetch_revision(self: R, rev_no: Optional[int] = None, rev_hash: Optional[str] = None) -> R:
+    async def fetch_revision(
+        self: R, rev_no: Optional[int] = None, rev_hash: Optional[str] = None
+    ) -> R:
         """
         Fetches a revision of the object by revision number (0 => original) or revision hash.
         :param rev_no: the revision number of the revision to fetch.
         :param rev_hash: the hash of the revision to fetch.
         """
-        assert self.id_hash is not None, 'Cannot fetch revision of an object which has not been posted yet.'
+        assert (
+            self.id_hash is not None
+        ), "Cannot fetch revision of an object which has not been posted yet."
         assert self.current_revision is not None
 
         if rev_no is not None:
@@ -81,7 +103,7 @@ class Record(BaseModel, ABC):
             if self.current_revision == rev_no:
                 return self
             elif rev_no > len(self.revision_hashes):
-                raise IndexError(f'No revision no. {rev_no} found for {self}')
+                raise IndexError(f"No revision no. {rev_no} found for {self}")
             else:
                 self.current_revision = rev_no
         elif rev_hash is not None:
@@ -90,13 +112,12 @@ class Record(BaseModel, ABC):
             try:
                 self.current_revision = self.revision_hashes.index(rev_hash)
             except ValueError:
-                raise IndexError(f'{rev_hash} is not a revision of {self}')
+                raise IndexError(f"{rev_hash} is not a revision of {self}")
         else:
-            raise ValueError('Either rev or hash must be provided')
+            raise ValueError("Either rev or hash must be provided")
 
         resp = await AARS.fetch_exact(
-            type(self),
-            self.revision_hashes[self.current_revision]
+            type(self), self.revision_hashes[self.current_revision]
         )
         self.__dict__.update(resp.content)
 
@@ -150,18 +171,20 @@ class Record(BaseModel, ABC):
         Initializes a record object from its raw Aleph data.
         :post: Raw Aleph data.
         """
-        obj = cls(**post['content'])
-        if post.get('ref') is None:
-            obj.id_hash = post['item_hash']
+        obj = cls(**post["content"])
+        if post.get("ref") is None:
+            obj.id_hash = post["item_hash"]
         else:
-            obj.id_hash = post['ref']
+            obj.id_hash = post["ref"]
         await obj.update_revision_hashes()
         assert obj.id_hash is not None
         obj.current_revision = obj.revision_hashes.index(obj.id_hash)
         return obj
 
     @classmethod
-    async def fetch(cls: Type[R], hashes: Union[str, List[str]], regenerate_index=False) -> List[R]:
+    async def fetch(
+        cls: Type[R], hashes: Union[str, List[str]], regenerate_index=False
+    ) -> List[R]:
         """
         Fetches one or more objects of given type by its/their item_hash[es].
         """
@@ -174,12 +197,19 @@ class Record(BaseModel, ABC):
         return items
 
     @classmethod
-    async def fetch_all(cls: Type[R], regenerate_index=False) -> List[R]:
+    async def fetch_all(
+        cls: Type[R],
+        pagination: int = 10,
+        page: int = 1,
+        regenerate_index: bool = False,
+    ) -> List[R]:
         """
         Fetches all objects of given type.
 
         WARNING: This can take quite some time, depending on the amount of records to be fetched.
 
+        :param page:
+        :param pagination:
         :param regenerate_index: If set to `True`, will (re-)add all items to the existing indices.
         :return: All items of class type.
         """
@@ -211,11 +241,11 @@ class Record(BaseModel, ABC):
         return await index.lookup(query)
 
     @classmethod
-    def add_index(cls: Type[R], index: 'Index') -> None:
+    def add_index(cls: Type[R], index: "Index") -> None:
         cls.__indices[repr(index)] = index
 
     @classmethod
-    def get_index(cls: Type[R], index_name: str) -> 'Index[R]':
+    def get_index(cls: Type[R], index_name: str) -> "Index[R]":
         """
         Returns an index or any of its subindices by its name. The name is defined as
         '<object_class>.[<object_properties>.]' with the properties being sorted alphabetically. For example,
@@ -225,19 +255,19 @@ class Record(BaseModel, ABC):
         """
         index = cls.__indices.get(index_name)
         if index is None:
-            key_subslices = subslices(list(index_name.split('.')[1:]))
+            key_subslices = subslices(list(index_name.split(".")[1:]))
             # returns all plausible combinations of keys
             key_subslices = sorted(key_subslices, key=lambda x: len(x), reverse=True)
             for keys in key_subslices:
-                name = cls.__name__ + '.' + '.'.join(keys)
+                name = cls.__name__ + "." + ".".join(keys)
                 if cls.__indices.get(name):
-                    warnings.warn(f'No index {index_name} found. Using {name} instead.')
+                    warnings.warn(f"No index {index_name} found. Using {name} instead.")
                     return cls.__indices[name]
-            raise IndexError(f'No index or subindex for {index_name} found.')
+            raise IndexError(f"No index or subindex for {index_name} found.")
         return index
 
     @classmethod
-    def get_indices(cls: Type[R]) -> List['Index']:
+    def get_indices(cls: Type[R]) -> List["Index"]:
         if cls == Record:
             return list(cls.__indices.values())
         return [index for index in cls.__indices.values() if index.record_type == cls]
@@ -262,6 +292,7 @@ class Index(Record, Generic[R]):
     """
     Class to define Indices.
     """
+
     record_type: Type[R]
     index_on: List[str]
     hashmap: Dict[Tuple, Set[str]] = {}
@@ -317,7 +348,9 @@ class Index(Record, Generic[R]):
         if id_hashes is None:
             return []
 
-        items = await async_iterator_to_list(AARS.fetch_records(self.record_type, list(id_hashes)))
+        items = await async_iterator_to_list(
+            AARS.fetch_records(self.record_type, list(id_hashes))
+        )
 
         if needs_filtering:
             return self._filter_index_items(items, query)
@@ -330,7 +363,9 @@ class Index(Record, Generic[R]):
         for item in items:
             # eliminate the item which does not fulfill the properties
             class_properties = vars(item)
-            required_class_properties = {key: class_properties.get(key) for key in sorted_keys}
+            required_class_properties = {
+                key: class_properties.get(key) for key in sorted_keys
+            }
             if required_class_properties == dict(query):
                 filtered_items.append(item)
         return filtered_items
@@ -363,13 +398,15 @@ class AARS:
     session: Optional[aiohttp.ClientSession]
     cache: Optional[VmCache]
 
-    def __init__(self,
-                 account: Optional[Account] = None,
-                 channel: Optional[str] = None,
-                 api_url: Optional[str] = None,
-                 session: Optional[aiohttp.ClientSession] = None,
-                 cache: Optional[VmCache] = None,
-                 retry_count: Optional[int] = None):
+    def __init__(
+        self,
+        account: Optional[Account] = None,
+        channel: Optional[str] = None,
+        api_url: Optional[str] = None,
+        session: Optional[aiohttp.ClientSession] = None,
+        cache: Optional[VmCache] = None,
+        retry_count: Optional[int] = None,
+    ):
         """
         Initializes the SDK with an account and a channel.
         :param cache: Whether to use Aleph VM caching when running AARS code.
@@ -379,7 +416,7 @@ class AARS:
         :param session: An aiohttp session to use. Defaults to a new session.
         """
         AARS.account = account if account else get_fallback_account()
-        AARS.channel = channel if channel else 'AARS_TEST'
+        AARS.channel = channel if channel else "AARS_TEST"
         AARS.api_url = api_url if api_url else settings.API_HOST
         AARS.session = session if session else None
         AARS.cache = cache
@@ -396,10 +433,9 @@ class AARS:
                 await record.regenerate_indices()
 
     @classmethod
-    async def post_or_amend_object(cls,
-                                   obj: R,
-                                   account: Optional[str] = None,
-                                   channel: Optional[str] = None) -> R:
+    async def post_or_amend_object(
+        cls, obj: R, account: Optional[str] = None, channel: Optional[str] = None
+    ) -> R:
         """
         Posts or amends an object to Aleph. If the object is already posted, it's list of revision hashes is updated and
         the object receives the latest revision number.
@@ -414,13 +450,15 @@ class AARS:
             channel = cls.channel
         assert isinstance(obj, Record)
         post_type = type(obj).__name__ if obj.id_hash is None else "amend"
-        resp = await client.create_post(account=account,
-                                        post_content=obj.content,
-                                        post_type=post_type,
-                                        channel=channel,
-                                        ref=obj.id_hash,
-                                        api_server=cls.api_url,
-                                        session=cls.session)
+        resp = await client.create_post(
+            account=account,
+            post_content=obj.content,
+            post_type=post_type,
+            channel=channel,
+            ref=obj.id_hash,
+            api_server=cls.api_url,
+            session=cls.session,
+        )
         if obj.id_hash is None:
             obj.id_hash = resp.item_hash
         obj.revision_hashes.append(resp.item_hash)
@@ -430,7 +468,12 @@ class AARS:
         return obj
 
     @classmethod
-    async def forget_objects(cls, objs: List[R], account: Optional[Account] = None, channel: Optional[str] = None):
+    async def forget_objects(
+        cls,
+        objs: List[R],
+        account: Optional[Account] = None,
+        channel: Optional[str] = None,
+    ):
         """
         Forgets multiple objects from Aleph and local cache. All related revisions will be forgotten too.
         :param objs: The objects to forget.
@@ -445,26 +488,27 @@ class AARS:
         for obj in objs:
             assert obj.id_hash is not None
             hashes += [obj.id_hash] + obj.revision_hashes
-        forget_task = client.forget(account=account,
-                                    hashes=hashes,
-                                    reason=None,
-                                    channel=channel,
-                                    api_server=cls.api_url,
-                                    session=cls.session)
+        forget_task = client.forget(
+            account=account,
+            hashes=hashes,
+            reason=None,
+            channel=channel,
+            api_server=cls.api_url,
+            session=cls.session,
+        )
         if cls.cache:
-            await asyncio.gather(
-                forget_task,
-                *[cls.cache.delete(h) for h in hashes]
-            )
+            await asyncio.gather(forget_task, *[cls.cache.delete(h) for h in hashes])
         else:
             await forget_task
 
     @classmethod
-    async def fetch_records(cls,
-                            record_type: Type[R],
-                            item_hashes: Optional[List[str]] = None,
-                            channel: Optional[str] = None,
-                            owner: Optional[str] = None) -> AsyncIterator[R]:
+    async def fetch_records(
+        cls,
+        record_type: Type[R],
+        item_hashes: Optional[List[str]] = None,
+        channel: Optional[str] = None,
+        owner: Optional[str] = None,
+    ) -> AsyncIterator[R]:
         """
         Retrieves posts as objects by its aleph item_hash.
 
@@ -489,68 +533,79 @@ class AARS:
             if len(item_hashes) == 0:
                 return
 
-        async for record in cls._fetch_records_from_api(record_type=record_type,
-                                                        item_hashes=item_hashes,
-                                                        channels=channels,
-                                                        owners=owners):
+        async for record in cls._fetch_records_from_api(
+            record_type=record_type,
+            item_hashes=item_hashes,
+            channels=channels,
+            owners=owners,
+        ):
             yield record
 
     @classmethod
-    async def _fetch_records_from_cache(cls, record_type: Type[R], item_hashes: List[str]) -> List[R]:
+    async def _fetch_records_from_cache(
+        cls, record_type: Type[R], item_hashes: List[str]
+    ) -> List[R]:
         assert cls.cache
         raw_records = await asyncio.gather(*[cls.cache.get(h) for h in item_hashes])
         return [record_type.parse_raw(r) for r in raw_records if r is not None]
 
     @classmethod
-    async def _fetch_records_from_api(cls,
-                                      record_type: Type[R],
-                                      item_hashes: Optional[List[str]] = None,
-                                      channels: Optional[List[str]] = None,
-                                      owners: Optional[List[str]] = None,
-                                      refs: Optional[List[str]] = None,
-                                      page=1) -> AsyncIterator[R]:
+    async def _fetch_records_from_api(
+        cls,
+        record_type: Type[R],
+        item_hashes: Optional[List[str]] = None,
+        channels: Optional[List[str]] = None,
+        owners: Optional[List[str]] = None,
+        refs: Optional[List[str]] = None,
+        page=1,
+    ) -> AsyncIterator[R]:
         aleph_resp = None
         retries = cls.retry_count
         while aleph_resp is None:
             try:
-                aleph_resp = await client.get_posts(hashes=item_hashes,
-                                                    channels=channels,
-                                                    types=[record_type.__name__],
-                                                    addresses=owners,
-                                                    refs=refs,
-                                                    api_server=cls.api_url,
-                                                    session=cls.session,
-                                                    pagination=50,
-                                                    page=page)
+                aleph_resp = await client.get_posts(
+                    hashes=item_hashes,
+                    channels=channels,
+                    types=[record_type.__name__],
+                    addresses=owners,
+                    refs=refs,
+                    api_server=cls.api_url,
+                    session=cls.session,
+                    pagination=50,
+                    page=page,
+                )
             except ServerDisconnectedError:
                 retries -= 1
                 if retries == 0:
                     raise
-        for post in aleph_resp['posts']:
+        for post in aleph_resp["posts"]:
             yield await record_type.from_dict(post)
 
         if page == 1:
             # If there are more pages, fetch them
-            total_items = aleph_resp['pagination_total']
-            per_page = aleph_resp['pagination_per_page']
+            total_items = aleph_resp["pagination_total"]
+            per_page = aleph_resp["pagination_per_page"]
             if total_items > per_page:
                 for next_page in range(2, math.ceil(total_items / per_page) + 1):
                     async for record in cls._fetch_records_from_api(
-                            record_type=record_type,
-                            item_hashes=item_hashes,
-                            channels=channels,
-                            owners=owners,
-                            refs=refs,
-                            page=next_page):
+                        record_type=record_type,
+                        item_hashes=item_hashes,
+                        channels=channels,
+                        owners=owners,
+                        refs=refs,
+                        page=next_page,
+                    ):
                         yield record
 
     @classmethod
-    async def fetch_revisions(cls,
-                              record_type: Type[R],
-                              ref: str,
-                              channel: Optional[str] = None,
-                              owner: Optional[str] = None,
-                              page=1) -> AsyncIterator[str]:
+    async def fetch_revisions(
+        cls,
+        record_type: Type[R],
+        ref: str,
+        channel: Optional[str] = None,
+        owner: Optional[str] = None,
+        page=1,
+    ) -> AsyncIterator[str]:
         """Retrieves posts of revisions of an object by its item_hash.
         :param record_type: The type of the objects to retrieve.
         :param ref: item_hash of the object, whose revisions to fetch.
@@ -566,12 +621,14 @@ class AARS:
         retries = cls.retry_count
         while aleph_resp is None:
             try:
-                aleph_resp = await client.get_messages(channels=channels,
-                                                       addresses=owners,
-                                                       refs=[ref],
-                                                       api_server=cls.api_url,
-                                                       session=cls.session,
-                                                       pagination=50)
+                aleph_resp = await client.get_messages(
+                    channels=channels,
+                    addresses=owners,
+                    refs=[ref],
+                    api_server=cls.api_url,
+                    session=cls.session,
+                    pagination=50,
+                )
             except ServerDisconnectedError:
                 retries -= 1
                 if retries == 0:
@@ -586,17 +643,16 @@ class AARS:
             if total_items > per_page:
                 for next_page in range(2, math.ceil(total_items / per_page) + 1):
                     async for item_hash in cls.fetch_revisions(
-                            record_type=record_type,
-                            ref=ref,
-                            channel=channel,
-                            owner=owner,
-                            page=next_page):
+                        record_type=record_type,
+                        ref=ref,
+                        channel=channel,
+                        owner=owner,
+                        page=next_page,
+                    ):
                         yield item_hash
 
     @classmethod
-    async def fetch_exact(cls,
-                          record_type: Type[R],
-                          item_hash: str) -> R:
+    async def fetch_exact(cls, record_type: Type[R], item_hash: str) -> R:
         """Retrieves the revision of an object by its item_hash of the message. The content will be exactly the same
         as in the referenced message, so no amendments will be applied.
 
@@ -607,9 +663,9 @@ class AARS:
             cache_resp = await cls._fetch_records_from_cache(record_type, [item_hash])
             if len(cache_resp) > 0:
                 return cache_resp[0]
-        aleph_resp = await client.get_messages(hashes=[item_hash],
-                                               api_server=cls.api_url,
-                                               session=cls.session)
+        aleph_resp = await client.get_messages(
+            hashes=[item_hash], api_server=cls.api_url, session=cls.session
+        )
         if len(aleph_resp.messages) == 0:
             raise ValueError(f"Message with hash {item_hash} not found.")
         message: PostMessage = aleph_resp.messages[0]

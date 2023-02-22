@@ -4,4 +4,4 @@ aiohttp~=3.8.1
 pytest~=7.1.2
 pytest-asyncio
 pytest-xdist
-aleph-client~=0.5.0
+aleph-sdk-python~=0.6.0

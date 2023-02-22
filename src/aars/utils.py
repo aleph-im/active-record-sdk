@@ -44,7 +44,9 @@ def possible_index_names(seq):
     return map(".".join, subslices(seq))
 
 
-async def async_iterator_to_list(iterator: AsyncIterator[T], count: Optional[int] = None) -> List[T]:
+async def async_iterator_to_list(
+    iterator: AsyncIterator[T], count: Optional[int] = None
+) -> List[T]:
     """
     Return a list from an async iterator.
     """

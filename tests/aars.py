@@ -1,19 +1,21 @@
 import asyncio
 from typing import List, Optional
 
-from aleph_client.asynchronous import get_fallback_session
+from aleph_client import AuthenticatedUserSession
+from aleph_client.conf import settings
+from aleph_client.chains.ethereum import get_fallback_account
 
 from src.aars import Record, Index, AARS
 from src.aars.exceptions import AlreadyForgottenError
 import pytest
 
-AARS(session=get_fallback_session())
+AARS(session=AuthenticatedUserSession(get_fallback_account(), settings.API_HOST))
 
 
 @pytest.fixture(scope="session")
 def event_loop():
-    yield AARS.session.loop
-    asyncio.run(AARS.session.close())
+    yield AARS.session.http_session.loop
+    asyncio.run(AARS.session.http_session.close())
 
 
 @pytest.fixture(scope="session", autouse=True)

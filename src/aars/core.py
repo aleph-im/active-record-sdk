@@ -2,7 +2,6 @@ import asyncio
 import math
 import warnings
 from abc import ABC
-from collections import OrderedDict
 from operator import attrgetter
 from typing import (
     Type,
@@ -19,16 +18,15 @@ from typing import (
     AsyncIterator,
 )
 
-import aiohttp
 from aiohttp import ServerDisconnectedError
-from aleph_client.vm.cache import VmCache
-from aleph_message.models import PostMessage
 from pydantic import BaseModel
 
-import aleph_client.asynchronous as client
+from aleph_client import UserSession, AuthenticatedUserSession
 from aleph_client.types import Account
 from aleph_client.chains.ethereum import get_fallback_account
 from aleph_client.conf import settings
+from aleph_client.vm.cache import VmCache
+from aleph_message.models import PostMessage
 
 from .utils import subslices, async_iterator_to_list, IndexQuery
 from .exceptions import AlreadyForgottenError
@@ -214,7 +212,9 @@ class Record(BaseModel, ABC):
         :return: All items of class type.
         """
         if page_size is not None and page is not None:
-            items = await async_iterator_to_list(AARS.fetch_records(cls, page_size=page_size, page=page), page_size)
+            items = await async_iterator_to_list(
+                AARS.fetch_records(cls, page_size=page_size, page=page), page_size
+            )
         else:
             items = await async_iterator_to_list(AARS.fetch_records(cls))
         if regenerate_index:
@@ -401,7 +401,7 @@ class AARS:
     channel: str
     api_url: str
     retry_count: int
-    session: Optional[aiohttp.ClientSession]
+    session: AuthenticatedUserSession
     cache: Optional[VmCache]
 
     def __init__(
@@ -409,7 +409,7 @@ class AARS:
         account: Optional[Account] = None,
         channel: Optional[str] = None,
         api_url: Optional[str] = None,
-        session: Optional[aiohttp.ClientSession] = None,
+        session: Optional[AuthenticatedUserSession] = None,
         cache: Optional[VmCache] = None,
         retry_count: Optional[int] = None,
     ):
@@ -424,7 +424,13 @@ class AARS:
         AARS.account = account if account else get_fallback_account()
         AARS.channel = channel if channel else "AARS_TEST"
         AARS.api_url = api_url if api_url else settings.API_HOST
-        AARS.session = session if session else None
+        AARS.session = (
+            session
+            if session
+            else AuthenticatedUserSession(
+                account=AARS.account, api_server=settings.API_HOST
+            )
+        )
         AARS.cache = cache
         AARS.retry_count = retry_count if retry_count else 3
 
@@ -439,68 +445,53 @@ class AARS:
                 await record.regenerate_indices()
 
     @classmethod
-    async def post_or_amend_object(
-        cls, obj: R, account: Optional[str] = None, channel: Optional[str] = None
-    ) -> R:
+    async def post_or_amend_object(cls, obj: R, channel: Optional[str] = None) -> R:
         """
         Posts or amends an object to Aleph. If the object is already posted, it's list of revision hashes is updated and
         the object receives the latest revision number.
         :param obj: The object to post or amend.
-        :param account: The account to post the object with. If None, will use configured account.
         :param channel: The channel to post the object to. If None, will use the configured channel.
         :return: The object, as it is now on Aleph.
         """
-        if account is None:
-            account = cls.account
         if channel is None:
             channel = cls.channel
         assert isinstance(obj, Record)
         post_type = type(obj).__name__ if obj.id_hash is None else "amend"
-        resp = await client.create_post(
-            account=account,
+        message, status = await cls.session.create_post(
             post_content=obj.content,
             post_type=post_type,
             channel=channel,
             ref=obj.id_hash,
-            api_server=cls.api_url,
-            session=cls.session,
         )
         if obj.id_hash is None:
-            obj.id_hash = resp.item_hash
-        obj.revision_hashes.append(resp.item_hash)
+            obj.id_hash = message.item_hash
+        obj.revision_hashes.append(message.item_hash)
         obj.current_revision = len(obj.revision_hashes) - 1
         if cls.cache:
-            await cls.cache.set(resp.item_hash, obj.json())
+            await cls.cache.set(message.item_hash, obj.json())
         return obj
 
     @classmethod
     async def forget_objects(
         cls,
         objs: List[R],
-        account: Optional[Account] = None,
         channel: Optional[str] = None,
     ):
         """
         Forgets multiple objects from Aleph and local cache. All related revisions will be forgotten too.
         :param objs: The objects to forget.
-        :param account: The account to delete the object with. If None, will use the fallback account.
         :param channel: The channel to delete the object from. If None, will use the TEST channel of the object.
         """
-        if account is None:
-            account = cls.account
         if channel is None:
             channel = cls.channel
         hashes = []
         for obj in objs:
             assert obj.id_hash is not None
             hashes += [obj.id_hash] + obj.revision_hashes
-        forget_task = client.forget(
-            account=account,
+        forget_task = cls.session.forget(
             hashes=hashes,
             reason=None,
             channel=channel,
-            api_server=cls.api_url,
-            session=cls.session,
         )
         if cls.cache:
             await asyncio.gather(forget_task, *[cls.cache.delete(h) for h in hashes])
@@ -579,14 +570,12 @@ class AARS:
         retries = cls.retry_count
         while aleph_resp is None:
             try:
-                aleph_resp = await client.get_posts(
+                aleph_resp = await cls.session.get_posts(
                     hashes=item_hashes,
                     channels=channels,
                     types=[record_type.__name__],
                     addresses=owners,
                     refs=refs,
-                    api_server=cls.api_url,
-                    session=cls.session,
                     pagination=page_size,
                     page=page,
                 )
@@ -637,12 +626,10 @@ class AARS:
         retries = cls.retry_count
         while aleph_resp is None:
             try:
-                aleph_resp = await client.get_messages(
+                aleph_resp = await cls.session.get_messages(
                     channels=channels,
                     addresses=owners,
                     refs=[ref],
-                    api_server=cls.api_url,
-                    session=cls.session,
                     pagination=50,
                 )
             except ServerDisconnectedError:
@@ -679,9 +666,7 @@ class AARS:
             cache_resp = await cls._fetch_records_from_cache(record_type, [item_hash])
             if len(cache_resp) > 0:
                 return cache_resp[0]
-        aleph_resp = await client.get_messages(
-            hashes=[item_hash], api_server=cls.api_url, session=cls.session
-        )
+        aleph_resp = await cls.session.get_messages(hashes=[item_hash])
         if len(aleph_resp.messages) == 0:
             raise ValueError(f"Message with hash {item_hash} not found.")
         message: PostMessage = aleph_resp.messages[0]

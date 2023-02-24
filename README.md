@@ -57,6 +57,6 @@ book = await Book.where_eq(title='Atlas Shrugged')[0]
 - [x] Test where_eq() for fetching multiple records
 - [x] Add reindexing function on AARS
 - [ ] Add caching of records
-  - [ ] Cache records retrieved by item_hash
+  - [x] Cache records retrieved by item_hash
   - [ ] Cache records retrieved by fetch_all/timeline
     - [ ] Add item_hashes endpoint to pyaleph for quick cross-checking of cache hashes

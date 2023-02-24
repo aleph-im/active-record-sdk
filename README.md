@@ -25,7 +25,7 @@ Index(Book, 'title')
 new_book = await Book(title='Atlas Shrugged', author='Ayn Rand').save()
 
 # retrieve a book by its ID
-book = await Book.get(new_book.id_hash)[0]
+book = await Book.fetch(new_book.id_hash)[0]
 
 # retrieve a book by its title
 book = await Book.where_eq(title='Atlas Shrugged')[0]
@@ -45,7 +45,7 @@ book = await Book.where_eq(title='Atlas Shrugged')[0]
   - [x] Allow multiple items to share one index key
   - [ ] Add more comparators for where_() queries
     - [ ] where_gte()
-    - [ ] where_lte()query
+    - [ ] where_lte()
     - [ ] where_contains()
   - [ ] Persist indices to lower startup time
 - [x] Automatic multi-page fetching

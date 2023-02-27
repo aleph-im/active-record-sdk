@@ -53,6 +53,7 @@ class Record(BaseModel, ABC):
     id_hash: Optional[str] = None
     current_revision: Optional[int] = None
     revision_hashes: List[str] = []
+    timestamp: Optional[float] = None
     __indices: ClassVar[Dict[str, "Index"]] = {}
 
     def __repr__(self):
@@ -67,7 +68,7 @@ class Record(BaseModel, ABC):
         :return: content dictionary of the object, as it is to be stored on Aleph.
         """
         return self.dict(
-            exclude={"id_hash", "current_revision", "revision_hashes", "forgotten"}
+            exclude={"id_hash", "current_revision", "revision_hashes", "forgotten", "timestamp"}
         )
 
     async def update_revision_hashes(self: R):
@@ -118,6 +119,7 @@ class Record(BaseModel, ABC):
             type(self), self.revision_hashes[self.current_revision]
         )
         self.__dict__.update(resp.content)
+        self.timestamp = resp.timestamp
 
         return self
 
@@ -161,6 +163,7 @@ class Record(BaseModel, ABC):
         await obj.update_revision_hashes()
         assert obj.id_hash is not None
         obj.current_revision = obj.revision_hashes.index(obj.id_hash)
+        obj.timestamp = post.time
         return obj
 
     @classmethod
@@ -177,6 +180,7 @@ class Record(BaseModel, ABC):
         await obj.update_revision_hashes()
         assert obj.id_hash is not None
         obj.current_revision = obj.revision_hashes.index(obj.id_hash)
+        obj.timestamp = post["time"]
         return obj
 
     @classmethod

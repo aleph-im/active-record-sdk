@@ -21,14 +21,20 @@ from typing import (
 from aiohttp import ServerDisconnectedError
 from pydantic import BaseModel
 
-from aleph_client import UserSession, AuthenticatedUserSession
-from aleph_client.types import Account
-from aleph_client.chains.ethereum import get_fallback_account
-from aleph_client.conf import settings
-from aleph_client.vm.cache import VmCache
-from aleph_message.models import PostMessage
+from aleph.sdk.client import AuthenticatedAlephClient
+from aleph.sdk.types import Account
+from aleph.sdk.chains.ethereum import get_fallback_account
+from aleph.sdk.conf import settings
+from aleph.sdk.vm.cache import VmCache
+from aleph_message.models import PostMessage, ItemHash, ChainRef
 
-from .utils import subslices, async_iterator_to_list, IndexQuery
+from .utils import (
+    subslices,
+    async_iterator_to_list,
+    IndexQuery,
+    PageableResponse,
+    PageableRequest, EmptyAsyncIterator,
+)
 from .exceptions import AlreadyForgottenError
 
 R = TypeVar("R", bound="Record")
@@ -50,9 +56,9 @@ class Record(BaseModel, ABC):
     """
 
     forgotten: bool = False
-    id_hash: Optional[str] = None
+    id_hash: Optional[ItemHash] = None
     current_revision: Optional[int] = None
-    revision_hashes: List[str] = []
+    revision_hashes: List[ItemHash] = []
     timestamp: Optional[float] = None
     __indices: ClassVar[Dict[str, "Index"]] = {}
 
@@ -61,6 +67,16 @@ class Record(BaseModel, ABC):
 
     def __str__(self):
         return f"{type(self).__name__} {self.__dict__}"
+
+    def __eq__(self, other):
+        return (
+            str(self.id_hash) == str(other.id_hash) and
+            self.current_revision == other.current_revision and
+            self.revision_hashes == other.revision_hashes and
+            self.forgotten == other.forgotten and
+            self.content == other.content
+            # do not compare timestamps, they can deviate on Aleph between commitment and finalization
+        )
 
     @property
     def content(self) -> Dict[str, Any]:
@@ -106,10 +122,11 @@ class Record(BaseModel, ABC):
             else:
                 self.current_revision = rev_no
         elif rev_hash is not None:
+            rev_item_hash = ItemHash(rev_hash)
             if rev_hash == self.revision_hashes[self.current_revision]:
                 return self
             try:
-                self.current_revision = self.revision_hashes.index(rev_hash)
+                self.current_revision = self.revision_hashes.index(rev_item_hash)
             except ValueError:
                 raise IndexError(f"{rev_hash} is not a revision of {self}")
         else:
@@ -159,7 +176,12 @@ class Record(BaseModel, ABC):
         if post.content.ref is None:
             obj.id_hash = post.item_hash
         else:
-            obj.id_hash = post.content.ref
+            if isinstance(post.content.ref, str):
+                obj.id_hash = ItemHash(post.content.ref)
+            elif isinstance(post.content.ref, ChainRef):
+                obj.id_hash = post.content.ref.item_hash
+            else:
+                raise TypeError(f"Unknown type of ref: {type(post.content.ref)}")
         await obj.update_revision_hashes()
         assert obj.id_hash is not None
         obj.current_revision = obj.revision_hashes.index(obj.id_hash)
@@ -174,9 +196,9 @@ class Record(BaseModel, ABC):
         """
         obj = cls(**post["content"])
         if post.get("ref") is None:
-            obj.id_hash = post["item_hash"]
+            obj.id_hash = ItemHash(post["item_hash"])
         else:
-            obj.id_hash = post["ref"]
+            obj.id_hash = ItemHash(post["ref"])
         await obj.update_revision_hashes()
         assert obj.id_hash is not None
         obj.current_revision = obj.revision_hashes.index(obj.id_hash)
@@ -184,50 +206,28 @@ class Record(BaseModel, ABC):
         return obj
 
     @classmethod
-    async def fetch(
-        cls: Type[R], hashes: Union[str, List[str]], regenerate_index=False
-    ) -> List[R]:
+    def fetch(cls: Type[R], hashes: Union[str, List[str]]) -> PageableResponse[R]:
         """
         Fetches one or more objects of given type by its/their item_hash[es].
         """
         if not isinstance(hashes, List):
             hashes = [hashes]
-        items = await async_iterator_to_list(AARS.fetch_records(cls, list(hashes)))
-        if regenerate_index:
-            for item in items:
-                item._index()
-        return items
+        items = AARS.fetch_records(cls, list(hashes))
+        return PageableResponse(items)
 
     @classmethod
-    async def fetch_all(
-        cls: Type[R],
-        page_size: Optional[int] = None,
-        page: Optional[int] = None,
-        regenerate_index: bool = False,
-    ) -> List[R]:
+    def fetch_objects(cls: Type[R]) -> PageableRequest[R]:
         """
         Fetches all objects of given type.
 
         WARNING: This can take quite some time, depending on the amount of records to be fetched.
 
-        :param page: If set, will fetch records of given page.
-        :param page_size: If set, will fetch records in pages of given size. Requires `page` to be set.
-        :param regenerate_index: If set to `True`, will (re-)add all items to the existing indices.
-        :return: All items of class type.
+        :return: A PageableRequest, which can be used to iterate, paginate or fetch all results at once.
         """
-        if page_size is not None and page is not None:
-            items = await async_iterator_to_list(
-                AARS.fetch_records(cls, page_size=page_size, page=page), page_size
-            )
-        else:
-            items = await async_iterator_to_list(AARS.fetch_records(cls))
-        if regenerate_index:
-            for item in items:
-                item._index()
-        return items
+        return PageableRequest(AARS.fetch_records, record_type=cls)
 
     @classmethod
-    async def where_eq(cls: Type[R], **kwargs) -> List[R]:
+    def where_eq(cls: Type[R], **kwargs) -> PageableResponse[R]:
         """
         Queries an object by given properties through an index, in order to fetch applicable records.
         An index name is defined as '<object_class>.[<object_properties>.]' and is initialized by creating
@@ -242,10 +242,23 @@ class Record(BaseModel, ABC):
         If no index is defined for the given properties, an IndexError is raised.
 
         If only a part of the keys is indexed for the given query, a fallback index is used and locally filtered.
+
+        It will return a PageableResponse, which can be used to iterate, paginate or fetch all results at once.
+
+        >>> response = MyRecord.where_eq(property1='value1', property2='value2')
+        >>> async for record in response:
+        >>>     print(record)
+
+        >>> response = await MyRecord.where_eq(property2='value2').all()
+
+        >>> response = await MyRecord.where_eq(property1='value1').page(2, 10)
+
+        :param kwargs: The properties to query for.
         """
         query = IndexQuery(cls, **kwargs)
         index = cls.get_index(query.get_index_name())
-        return await index.lookup(query)
+        generator = index.lookup(query)
+        return PageableResponse(generator)
 
     @classmethod
     def add_index(cls: Type[R], index: "Index") -> None:
@@ -292,7 +305,13 @@ class Record(BaseModel, ABC):
 
         WARNING: This can take quite some time, depending on the amount of records to be fetched.
         """
-        return await cls.fetch_all(regenerate_index=True)
+        response = cls.fetch_objects()
+
+        records = []
+        async for record in response:
+            record._index()
+            records.append(record)
+        return records
 
 
 class Index(Record, Generic[R]):
@@ -332,7 +351,7 @@ class Index(Record, Generic[R]):
     def __repr__(self):
         return f"{self.record_type.__name__}.{'.'.join(self.index_on)}"
 
-    async def lookup(self, query: IndexQuery) -> List[R]:
+    def lookup(self, query: IndexQuery) -> AsyncIterator[R]:
         """
         Fetches records with given values for the indexed properties.
 
@@ -349,29 +368,27 @@ class Index(Record, Generic[R]):
         id_hashes = self.hashmap.get(tuple(subquery.values()))
 
         if id_hashes is None:
-            return []
+            return EmptyAsyncIterator()
 
-        items = await async_iterator_to_list(
-            AARS.fetch_records(self.record_type, list(id_hashes))
-        )
+        items = AARS.fetch_records(self.record_type, list(id_hashes))
 
         if needs_filtering:
             return self._filter_index_items(items, query)
         return items
 
     @classmethod
-    def _filter_index_items(cls, items: List[R], query: IndexQuery) -> List[R]:
+    async def _filter_index_items(
+        cls, items: AsyncIterator[R], query: IndexQuery
+    ) -> AsyncIterator[R]:
         sorted_keys = query.keys()
-        filtered_items = list()
-        for item in items:
+        async for item in items:
             # eliminate the item which does not fulfill the properties
             class_properties = vars(item)
             required_class_properties = {
                 key: class_properties.get(key) for key in sorted_keys
             }
             if required_class_properties == dict(query):
-                filtered_items.append(item)
-        return filtered_items
+                yield item
 
     def add_record(self, obj: R):
         """Adds a record to the index."""
@@ -405,7 +422,7 @@ class AARS:
     channel: str
     api_url: str
     retry_count: int
-    session: AuthenticatedUserSession
+    session: AuthenticatedAlephClient
     cache: Optional[VmCache]
 
     def __init__(
@@ -413,7 +430,7 @@ class AARS:
         account: Optional[Account] = None,
         channel: Optional[str] = None,
         api_url: Optional[str] = None,
-        session: Optional[AuthenticatedUserSession] = None,
+        session: Optional[AuthenticatedAlephClient] = None,
         cache: Optional[VmCache] = None,
         retry_count: Optional[int] = None,
     ):
@@ -431,7 +448,7 @@ class AARS:
         AARS.session = (
             session
             if session
-            else AuthenticatedUserSession(
+            else AuthenticatedAlephClient(
                 account=AARS.account, api_server=settings.API_HOST
             )
         )
@@ -471,6 +488,7 @@ class AARS:
             obj.id_hash = message.item_hash
         obj.revision_hashes.append(message.item_hash)
         obj.current_revision = len(obj.revision_hashes) - 1
+        obj.timestamp = message.time
         if cls.cache:
             await cls.cache.set(message.item_hash, obj.json())
         return obj
@@ -509,8 +527,8 @@ class AARS:
         item_hashes: Optional[List[str]] = None,
         channel: Optional[str] = None,
         owner: Optional[str] = None,
-        page_size: Optional[int] = None,
-        page: Optional[int] = None,
+        page_size: int = 50,
+        page: int = 1,
     ) -> AsyncIterator[R]:
         """
         Retrieves posts as objects by its aleph item_hash.
@@ -539,8 +557,6 @@ class AARS:
             if len(item_hashes) == 0:
                 return
 
-        page_size = page_size if page_size else 50
-        page = page if page else 1
         async for record in cls._fetch_records_from_api(
             record_type=record_type,
             item_hashes=item_hashes,
@@ -555,9 +571,13 @@ class AARS:
     async def _fetch_records_from_cache(
         cls, record_type: Type[R], item_hashes: List[str]
     ) -> List[R]:
-        assert cls.cache
+        assert cls.cache, "Cache is not set"
         raw_records = await asyncio.gather(*[cls.cache.get(h) for h in item_hashes])
-        return [record_type.parse_raw(r) for r in raw_records if r is not None]
+        return [
+            record_type.parse_raw(r)
+            for r in raw_records
+            if r is not None or not isinstance(r, BaseException)
+        ]
 
     @classmethod
     async def _fetch_records_from_api(
@@ -614,7 +634,7 @@ class AARS:
         channel: Optional[str] = None,
         owner: Optional[str] = None,
         page=1,
-    ) -> AsyncIterator[str]:
+    ) -> AsyncIterator[ItemHash]:
         """Retrieves posts of revisions of an object by its item_hash.
         :param record_type: The type of the objects to retrieve.
         :param ref: item_hash of the object, whose revisions to fetch.
@@ -656,7 +676,7 @@ class AARS:
                         owner=owner,
                         page=next_page,
                     ):
-                        yield item_hash
+                        yield ItemHash(item_hash)
 
     @classmethod
     async def fetch_exact(cls, record_type: Type[R], item_hash: str) -> R:

@@ -4,6 +4,18 @@ class AlephError(Exception):
     pass
 
 
+class AlreadyUsedError(AlephError):
+    """Exception raised when a PageableResponse has already been used."""
+
+    def __init__(
+        self,
+        message="PageableResponse has already been iterated over. It is recommended to "
+        "to store the result of all() or page() or to create a new query.",
+    ):
+        self.message = message
+        super().__init__(self.message)
+
+
 class AlreadyForgottenError(AlephError):
     def __init__(
         self,

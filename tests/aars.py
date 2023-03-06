@@ -1,15 +1,15 @@
 import asyncio
 from typing import List, Optional
 
-from aleph_client import AuthenticatedUserSession
-from aleph_client.conf import settings
-from aleph_client.chains.ethereum import get_fallback_account
+from aleph.sdk import AuthenticatedAlephClient
+from aleph.sdk.conf import settings
+from aleph.sdk.chains.ethereum import get_fallback_account
 
 from src.aars import Record, Index, AARS
 from src.aars.exceptions import AlreadyForgottenError
 import pytest
 
-AARS(session=AuthenticatedUserSession(get_fallback_account(), settings.API_HOST))
+AARS(session=AuthenticatedAlephClient(get_fallback_account(), settings.API_HOST))
 
 
 @pytest.fixture(scope="session")
@@ -42,7 +42,9 @@ async def test_store_and_index():
     assert new_book.title == 'Atlas Shrugged'
     assert new_book.author == 'Ayn Rand'
     await asyncio.sleep(1)
-    fetched_book = (await Book.where_eq(title='Atlas Shrugged'))[0]
+    fetched_book = await Book.where_eq(title='Atlas Shrugged').first()
+    print(fetched_book)
+    print(new_book)
     assert new_book == fetched_book
 
 
@@ -51,9 +53,9 @@ async def test_multi_index():
     new_book = await Book(title='Lila', author='Robert M. Pirsig', year=1991).save()
     # wait a few secs
     await asyncio.sleep(1)
-    should_be_none = (await Book.where_eq(title='Lila', author='Yo Momma'))
+    should_be_none = await Book.where_eq(title='Lila', author='Yo Momma').all()
     assert len(should_be_none) == 0
-    fetched_book = (await Book.where_eq(title='Lila', author='Robert M. Pirsig'))[0]
+    fetched_book = await Book.where_eq(title='Lila', author='Robert M. Pirsig').first()
     assert new_book == fetched_book
 
 
@@ -85,7 +87,7 @@ async def test_store_and_index_record_of_records():
     )
     new_library = await Library(name='The Library', books=books).save()
     await asyncio.sleep(1)
-    fetched_library = (await Library.where_eq(name='The Library'))[0]
+    fetched_library = await Library.where_eq(name='The Library').first()
     assert new_library == fetched_library
 
 
@@ -96,7 +98,7 @@ async def test_forget_object():
     await forgettable_book.forget()
     assert forgettable_book.forgotten is True
     await asyncio.sleep(1)
-    assert len(await Book.fetch(forgettable_book.id_hash)) == 0
+    assert len(await Book.fetch(forgettable_book.id_hash).all()) == 0
     with pytest.raises(AlreadyForgottenError):
         await forgettable_book.forget()
 
@@ -107,14 +109,14 @@ async def test_store_and_wrong_where_eq():
     assert new_book.title == 'Atlas Shrugged'
     assert new_book.author == 'Ayn Rand'
     with pytest.warns(UserWarning):
-        fetched_book = (await Book.where_eq(title='Atlas Shrugged', foo="bar"))
+        fetched_book = (await Book.where_eq(title='Atlas Shrugged', foo="bar").all())
     assert len(fetched_book) == 0
 
 
 @pytest.mark.asyncio
 async def test_fetch_all_pagination():
-    page_one = await Book.fetch_all(page_size=1, page=1)
-    page_two = await Book.fetch_all(page_size=1, page=2)
+    page_one = await Book.fetch_objects().page(1, 1)
+    page_two = await Book.fetch_objects().page(2, 1)
     assert len(page_one) == 1
     assert len(page_two) == 1
     assert page_one[0] != page_two[0]

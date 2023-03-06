@@ -88,7 +88,7 @@ class PageableRequest(AsyncIterator[T], Generic[T]):
     func: Callable[..., AsyncIterator[T]]
     args: Tuple
     kwargs: Dict
-    response: Optional[PageableResponse] = None
+    _response: Optional[PageableResponse] = None
 
     def __init__(self, func: Callable[..., AsyncIterator[T]], *args, **kwargs):
         self.func = func
@@ -96,36 +96,33 @@ class PageableRequest(AsyncIterator[T], Generic[T]):
         self.kwargs = kwargs
 
     def __await__(self):
-        self.response = PageableResponse(self.func(*self.args, **self.kwargs))
-        return self.response
+        self._response = PageableResponse(self.func(*self.args, **self.kwargs))
+        return self._response
 
     def __aiter__(self) -> AsyncIterator[T]:
-        self._prepare_response()
-        assert self.response is not None
         return self.response
 
     def __anext__(self) -> Awaitable[T]:
-        return PageableResponse(self.func(*self.args, **self.kwargs, page=1, page_size=20)).__anext__()
+        return self.response.__anext__()
 
-    def _prepare_response(self):
-        if self.response is not None:
-            return self.response
-        self.response = PageableResponse(self.func(*self.args, **self.kwargs, page=1, page_size=20))
+    @property
+    def response(self):
+        if self._response is None:
+            self._response = PageableResponse(self.func(*self.args, **self.kwargs, page=-1, page_size=20))
+        return self._response
 
     async def all(self) -> List[T]:
-        return await PageableResponse(
-            self.func(*self.args, **self.kwargs, page=1, page_size=20)
-        ).all()
+        return await self.response.all()
 
     async def page(self, page, page_size) -> List[T]:
-        return await PageableResponse(
+        self._response = PageableResponse(
             self.func(*self.args, **self.kwargs, page=page, page_size=page_size)
-        ).page(page=page, page_size=page_size)
+        )
+        return await self.response.all()
 
     async def first(self) -> Optional[T]:
-        return await PageableResponse(
-            self.func(*self.args, **self.kwargs, page=1, page_size=20)
-        ).first()
+        self._response = PageableResponse(self.func(*self.args, **self.kwargs, page=1, page_size=1))
+        return await self.response.first()
 
 
 def subslices(seq):

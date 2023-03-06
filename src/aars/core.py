@@ -594,6 +594,7 @@ class AARS:
         retries = cls.retry_count
         while aleph_resp is None:
             try:
+                actual_page = page if page != -1 else 1
                 aleph_resp = await cls.session.get_posts(
                     hashes=item_hashes,
                     channels=channels,
@@ -601,8 +602,11 @@ class AARS:
                     addresses=owners,
                     refs=refs,
                     pagination=page_size,
-                    page=page,
+                    page=actual_page,
                 )
+                if page == 2:
+                    print(record_type.__name__, item_hashes, channels, owners, refs, page_size, page)
+                    print("aleph_resp", aleph_resp)
             except ServerDisconnectedError:
                 retries -= 1
                 if retries == 0:
@@ -610,8 +614,8 @@ class AARS:
         for post in aleph_resp["posts"]:
             yield await record_type.from_dict(post)
 
-        if page == 1:
-            # If there are more pages, fetch them
+        if page == -1:
+            # Get all pages
             total_items = aleph_resp["pagination_total"]
             per_page = aleph_resp["pagination_per_page"]
             if total_items > per_page:
@@ -655,6 +659,7 @@ class AARS:
                     addresses=owners,
                     refs=[ref],
                     pagination=50,
+                    page=page,
                 )
             except ServerDisconnectedError:
                 retries -= 1

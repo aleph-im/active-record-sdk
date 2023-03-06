@@ -22,13 +22,13 @@ AARS(channel="MyLibrary")
 Index(Book, 'title')
 
 # create & upload a book
-new_book = await Book.create(title='Atlas Shrugged', author='Ayn Rand')
+new_book = await Book(title='Atlas Shrugged', author='Ayn Rand').save()
 
 # retrieve a book by its ID
-book = await Book.get(new_book.id_hash)[0]
+book = await Book.fetch(new_book.id_hash)[0]
 
 # retrieve a book by its title
-book = await Book.query(title='Atlas Shrugged')[0]
+book = await Book.where_eq(title='Atlas Shrugged')[0]
 ```
 
 
@@ -37,7 +37,7 @@ book = await Book.query(title='Atlas Shrugged')[0]
 - [x] Versioning
   - [x] Use "amend" post_type for updates
   - [x] Fetch revisions with messages endpoint
-- [x] Basic indexing/querying operations
+- [ ] Basic indexing/querying operations
   - [x] Single-key indexing 
   - [x] Multi-key indexing
   - [x] Query with list of keys
@@ -45,8 +45,9 @@ book = await Book.query(title='Atlas Shrugged')[0]
   - [x] Allow multiple items to share one index key
   - [ ] Add more comparators for where_() queries
     - [ ] where_gte()
-    - [ ] where_lte()query
+    - [ ] where_lte()
     - [ ] where_contains()
+  - [ ] Persist indices to lower startup time
 - [x] Automatic multi-page fetching
 - [x] Encapsulate Aleph SDK as class
 - [x] Local VM caching
@@ -55,3 +56,7 @@ book = await Book.query(title='Atlas Shrugged')[0]
 - [x] Add to indices when fetching records
 - [x] Test where_eq() for fetching multiple records
 - [x] Add reindexing function on AARS
+- [ ] Add caching of records
+  - [x] Cache records retrieved by item_hash
+  - [ ] Cache records retrieved by fetch_all/timeline
+    - [ ] Add item_hashes endpoint to pyaleph for quick cross-checking of cache hashes

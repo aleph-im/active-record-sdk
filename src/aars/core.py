@@ -604,7 +604,7 @@ class AARS:
         return [
             record_type.parse_raw(r)
             for r in raw_records
-            if r is not None or not isinstance(r, BaseException)
+            if r is not None and not isinstance(r, BaseException)
         ]
 
     @classmethod

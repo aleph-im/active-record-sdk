@@ -28,7 +28,7 @@ class IndexQuery(OrderedDict, Generic[T]):
     record_type: Type[T]
 
     def __init__(self, record_type: Type[T], **kwargs):
-        super().__init__({item[0]: item[1] for item in sorted(kwargs.items())})
+        super().__init__({item[0]: item[1] for item in sorted(kwargs.items()) if item[1] is not None})
         self.record_type = record_type
 
     def get_index_name(self) -> str:

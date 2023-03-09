@@ -123,6 +123,14 @@ async def test_fetch_all_pagination():
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip(reason="Only if you want to forget everything")
+async def test_drop_table():
+    await Record.drop_table()
+    assert len(await Book.fetch_objects().all()) == 0
+    assert len(await Library.fetch_objects().all()) == 0
+
+
+@pytest.mark.asyncio
 @pytest.mark.skip(reason="This takes a long time")
 async def test_sync_indices():
     await AARS.sync_indices()

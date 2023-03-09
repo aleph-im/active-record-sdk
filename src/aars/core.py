@@ -1,6 +1,7 @@
 import asyncio
 import math
 import warnings
+import logging
 from abc import ABC
 from operator import attrgetter
 from typing import (
@@ -37,6 +38,7 @@ from .utils import (
 )
 from .exceptions import AlreadyForgottenError
 
+logger = logging.getLogger(__name__)
 R = TypeVar("R", bound="Record")
 
 
@@ -206,7 +208,7 @@ class Record(BaseModel, ABC):
         return obj
 
     @classmethod
-    def fetch(cls: Type[R], hashes: Union[str, List[str]]) -> PageableResponse[R]:
+    def fetch(cls: Type[R], hashes: Union[Union[str, ItemHash], List[Union[str, ItemHash]]]) -> PageableResponse[R]:
         """
         Fetches one or more objects of given type by its/their item_hash[es].
         """
@@ -312,6 +314,32 @@ class Record(BaseModel, ABC):
             record._index()
             records.append(record)
         return records
+
+    @classmethod
+    async def drop_table(cls: Type[R]) -> List[ItemHash]:
+        """
+        Forgets all Records of given type. If invoked on Record, will try to fetch all objects of the current channel
+        and forget them.
+
+        :return: The affected item_hashes
+        """
+        response = cls.fetch_objects()
+
+        item_hashes = []
+        record_batch = []
+        i = 0
+        async for record in response:
+            record_batch.append(record)
+            i += 1
+            if i % 50 == 0:
+                item_hashes.extend([record.id_hash for record in record_batch])
+                await AARS.forget_objects(record_batch)
+                record_batch = []
+        if record_batch:
+            item_hashes.extend([record.id_hash for record in record_batch])
+            await AARS.forget_objects(record_batch)
+
+        return item_hashes
 
 
 class Index(Record, Generic[R]):
@@ -524,7 +552,7 @@ class AARS:
     async def fetch_records(
         cls,
         record_type: Type[R],
-        item_hashes: Optional[List[str]] = None,
+        item_hashes: Optional[List[Union[str, ItemHash]]] = None,
         channel: Optional[str] = None,
         owner: Optional[str] = None,
         page_size: int = 50,

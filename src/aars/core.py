@@ -58,21 +58,11 @@ class Record(BaseModel, ABC):
     """
 
     forgotten: bool = False
-    _id_hash: Optional[ItemHash] = None
+    id_hash: Optional[Union[ItemHash, str]] = None
     current_revision: Optional[int] = None
     revision_hashes: List[ItemHash] = []
     timestamp: Optional[float] = None
     __indices: ClassVar[Dict[str, "Index"]] = {}
-
-    @property
-    def id_hash(self):
-        return self._id_hash
-
-    @id_hash.setter
-    def id_hash(self, value: Union[str, ItemHash]):
-        if isinstance(value, str):
-            value = ItemHash(value)
-        self._id_hash = value
 
     def __repr__(self):
         return f"{type(self).__name__}({self.id_hash})"
@@ -435,6 +425,8 @@ class Index(Record, Generic[R]):
         key = attrgetter(*self.index_on)(obj)
         if isinstance(key, str):
             key = (key,)
+        if isinstance(key, list):
+            key = tuple(key)
         if key not in self.hashmap:
             self.hashmap[key] = set()
         self.hashmap[key].add(obj.id_hash)

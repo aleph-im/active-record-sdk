@@ -58,11 +58,21 @@ class Record(BaseModel, ABC):
     """
 
     forgotten: bool = False
-    id_hash: Optional[ItemHash] = None
+    _id_hash: Optional[ItemHash] = None
     current_revision: Optional[int] = None
     revision_hashes: List[ItemHash] = []
     timestamp: Optional[float] = None
     __indices: ClassVar[Dict[str, "Index"]] = {}
+
+    @property
+    def id_hash(self):
+        return self._id_hash
+
+    @id_hash.setter
+    def id_hash(self, value: Union[str, ItemHash]):
+        if isinstance(value, str):
+            value = ItemHash(value)
+        self._id_hash = value
 
     def __repr__(self):
         return f"{type(self).__name__}({self.id_hash})"

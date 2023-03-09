@@ -36,6 +36,11 @@ class Library(Record):
     books: List[Book]
 
 
+def test_invalid_index_created():
+    with pytest.raises(ValueError):
+        Index(Book, 'some_nonexistent_field')
+
+
 @pytest.mark.asyncio
 async def test_store_and_index():
     new_book = await Book(title='Atlas Shrugged', author='Ayn Rand').save()

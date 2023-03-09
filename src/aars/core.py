@@ -370,6 +370,9 @@ class Index(Record, Generic[R]):
         """
         if isinstance(on, str):
             on = [on]
+        for prop in on:
+            if prop not in record_type.__fields__.keys():
+                raise ValueError(f"Property {prop} is not defined in {record_type.__name__}")
         super(Index, self).__init__(record_type=record_type, index_on=sorted(on))
         record_type.add_index(self)
 

@@ -28,7 +28,9 @@ class IndexQuery(OrderedDict, Generic[T]):
     record_type: Type[T]
 
     def __init__(self, record_type: Type[T], **kwargs):
-        super().__init__({item[0]: item[1] for item in sorted(kwargs.items()) if item[1] is not None})
+        super().__init__(
+            {item[0]: item[1] for item in sorted(kwargs.items()) if item[1] is not None}
+        )
         self.record_type = record_type
 
     def get_index_name(self) -> str:
@@ -45,6 +47,7 @@ class PageableResponse(AsyncIterator[T], Generic[T]):
     A wrapper around an AsyncIterator that allows for easy pagination and iteration, while also preventing multiple
     iterations. This is mainly used for nicer syntax when not using the async generator syntax.
     """
+
     record_generator: AsyncIterator[T]
     used: bool = False
 
@@ -62,7 +65,7 @@ class PageableResponse(AsyncIterator[T], Generic[T]):
             raise AlreadyUsedError()
         self.used = True
         return await async_iterator_to_list(
-            self.record_generator, page * page_size, page_size
+            self.record_generator, (page - 1) * page_size, page_size
         )
 
     async def first(self) -> Optional[T]:
@@ -111,7 +114,9 @@ class PageableRequest(AsyncIterator[T], Generic[T]):
     @property
     def response(self):
         if self._response is None:
-            self._response = PageableResponse(self.func(*self.args, **self.kwargs, page=-1, page_size=20))
+            self._response = PageableResponse(
+                self.func(*self.args, **self.kwargs, page=-1, page_size=20)
+            )
         return self._response
 
     async def all(self) -> List[T]:
@@ -124,7 +129,9 @@ class PageableRequest(AsyncIterator[T], Generic[T]):
         return await self.response.all()
 
     async def first(self) -> Optional[T]:
-        self._response = PageableResponse(self.func(*self.args, **self.kwargs, page=1, page_size=1))
+        self._response = PageableResponse(
+            self.func(*self.args, **self.kwargs, page=1, page_size=1)
+        )
         return await self.response.first()
 
 

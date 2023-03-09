@@ -34,7 +34,8 @@ from .utils import (
     async_iterator_to_list,
     IndexQuery,
     PageableResponse,
-    PageableRequest, EmptyAsyncIterator,
+    PageableRequest,
+    EmptyAsyncIterator,
 )
 from .exceptions import AlreadyForgottenError
 
@@ -72,11 +73,11 @@ class Record(BaseModel, ABC):
 
     def __eq__(self, other):
         return (
-            str(self.id_hash) == str(other.id_hash) and
-            self.current_revision == other.current_revision and
-            self.revision_hashes == other.revision_hashes and
-            self.forgotten == other.forgotten and
-            self.content == other.content
+            str(self.id_hash) == str(other.id_hash)
+            and self.current_revision == other.current_revision
+            and self.revision_hashes == other.revision_hashes
+            and self.forgotten == other.forgotten
+            and self.content == other.content
             # do not compare timestamps, they can deviate on Aleph between commitment and finalization
         )
 
@@ -86,7 +87,13 @@ class Record(BaseModel, ABC):
         :return: content dictionary of the object, as it is to be stored on Aleph.
         """
         return self.dict(
-            exclude={"id_hash", "current_revision", "revision_hashes", "forgotten", "timestamp"}
+            exclude={
+                "id_hash",
+                "current_revision",
+                "revision_hashes",
+                "forgotten",
+                "timestamp",
+            }
         )
 
     async def update_revision_hashes(self: R):
@@ -208,7 +215,9 @@ class Record(BaseModel, ABC):
         return obj
 
     @classmethod
-    def fetch(cls: Type[R], hashes: Union[Union[str, ItemHash], List[Union[str, ItemHash]]]) -> PageableResponse[R]:
+    def fetch(
+        cls: Type[R], hashes: Union[Union[str, ItemHash], List[Union[str, ItemHash]]]
+    ) -> PageableResponse[R]:
         """
         Fetches one or more objects of given type by its/their item_hash[es].
         """
@@ -370,9 +379,6 @@ class Index(Record, Generic[R]):
         """
         if isinstance(on, str):
             on = [on]
-        for prop in on:
-            if prop not in record_type.__fields__.keys():
-                raise ValueError(f"Property {prop} is not defined in {record_type.__name__}")
         super(Index, self).__init__(record_type=record_type, index_on=sorted(on))
         record_type.add_index(self)
 
@@ -616,7 +622,7 @@ class AARS:
     async def _fetch_records_from_api(
         cls,
         record_type: Type[R],
-        item_hashes: Optional[List[str]] = None,
+        item_hashes: Optional[List[Union[str, ItemHash]]] = None,
         channels: Optional[List[str]] = None,
         owners: Optional[List[str]] = None,
         refs: Optional[List[str]] = None,
@@ -625,6 +631,8 @@ class AARS:
     ) -> AsyncIterator[R]:
         aleph_resp = None
         retries = cls.retry_count
+        if item_hashes is not None:
+            item_hashes = [str(h) for h in item_hashes]
         while aleph_resp is None:
             try:
                 actual_page = page if page != -1 else 1
@@ -637,9 +645,6 @@ class AARS:
                     pagination=page_size,
                     page=actual_page,
                 )
-                if page == 2:
-                    print(record_type.__name__, item_hashes, channels, owners, refs, page_size, page)
-                    print("aleph_resp", aleph_resp)
             except ServerDisconnectedError:
                 retries -= 1
                 if retries == 0:

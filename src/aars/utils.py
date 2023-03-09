@@ -69,14 +69,17 @@ class PageableResponse(AsyncIterator[T], Generic[T]):
         if self.used:
             raise AlreadyUsedError()
         self.used = True
-        return await self.record_generator.__anext__()
+        try:
+            return await self.record_generator.__anext__()
+        except StopAsyncIteration:
+            return None
 
     def __anext__(self) -> Awaitable[T]:
         try:
             self.used = True
             return self.record_generator.__anext__()
-        except StopAsyncIteration:
-            raise
+        except StopAsyncIteration as e:
+            raise e
 
 
 class PageableRequest(AsyncIterator[T], Generic[T]):

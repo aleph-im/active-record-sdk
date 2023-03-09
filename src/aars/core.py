@@ -358,8 +358,8 @@ class Index(Record, Generic[R]):
         >>> Index(MyRecord, 'foo')
 
         This will create an index named 'MyRecord.foo', which is stored in the `MyRecord` class.
-        It is not recommended using the index directly, but rather through the `where_eq` method of the `Record` class like
-        so:
+        It is not recommended using the index directly, but rather through the `where_eq` method of the `Record` class
+        like so:
 
         >>> MyRecord.where_eq(foo='bar')
 

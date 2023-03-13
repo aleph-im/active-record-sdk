@@ -37,8 +37,13 @@ class Library(Record):
 
 
 def test_invalid_index_created():
-    with pytest.raises(ValueError):
-        Index(Book, 'some_nonexistent_field')
+    try:
+        index = None
+        with pytest.raises(ValueError):
+            index = Index(Book, 'some_nonexistent_field')
+    finally:
+        if index:
+            Record.remove_index(index)
 
 
 @pytest.mark.asyncio
@@ -130,7 +135,7 @@ async def test_fetch_all_pagination():
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Only if you want to forget everything")
 async def test_drop_table():
-    await Record.drop_table()
+    await Record.forget_all()
     assert len(await Book.fetch_objects().all()) == 0
     assert len(await Library.fetch_objects().all()) == 0
 

@@ -4,6 +4,21 @@ class AlephError(Exception):
     pass
 
 
+class AlephPermissionError(AlephError):
+    """Exception raised when a user is not authorized to perform an action on an item."""
+
+    def __init__(self,
+                 user_address: str,
+                 item_hash: str,
+                 item_owner: str,
+                 message="User {0} is not authorized to modify {1} by user {2}"):
+        self.user_address = user_address
+        self.item_hash = item_hash
+        self.item_owner = item_owner
+        self.message = message.format(self.user_address, self.item_hash, self.item_owner)
+        super().__init__(self.message)
+
+
 class AlreadyUsedError(AlephError):
     """Exception raised when a PageableResponse has already been used."""
 

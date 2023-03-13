@@ -37,7 +37,7 @@ from .utils import (
     PageableRequest,
     EmptyAsyncIterator,
 )
-from .exceptions import AlreadyForgottenError
+from .exceptions import AlreadyForgottenError, AlephPermissionError
 
 logger = logging.getLogger(__name__)
 R = TypeVar("R", bound="Record")
@@ -63,6 +63,8 @@ class Record(BaseModel, ABC):
     current_revision: Optional[int] = None
     revision_hashes: List[ItemHash] = []
     timestamp: Optional[float] = None
+    signer: Optional[str] = None
+    __indexed_items: ClassVar[Set[str]] = set()
     __indices: ClassVar[Dict[str, "Index"]] = {}
 
     def __repr__(self):
@@ -78,6 +80,7 @@ class Record(BaseModel, ABC):
             and self.revision_hashes == other.revision_hashes
             and self.forgotten == other.forgotten
             and self.content == other.content
+            and self.signer == other.signer
             # do not compare timestamps, they can deviate on Aleph between commitment and finalization
         )
 
@@ -93,6 +96,7 @@ class Record(BaseModel, ABC):
                 "revision_hashes",
                 "forgotten",
                 "timestamp",
+                "signer",
             }
         )
 
@@ -146,6 +150,7 @@ class Record(BaseModel, ABC):
         )
         self.__dict__.update(resp.content)
         self.timestamp = resp.timestamp
+        self.signer = resp.signer
 
         return self
 
@@ -162,6 +167,11 @@ class Record(BaseModel, ABC):
     def _index(self):
         for index in self.get_indices():
             index.add_record(self)
+        self.__indexed_items.add(self.id_hash)
+
+    @classmethod
+    def is_indexed(cls, id_hash: Union[ItemHash, str]):
+        return id_hash in cls.__indexed_items
 
     async def forget(self):
         """
@@ -169,6 +179,8 @@ class Record(BaseModel, ABC):
         The forgotten object should be deleted afterward, as it is useless now.
         """
         if not self.forgotten:
+            if self.signer != AARS.account.get_address():
+                raise AlephPermissionError(AARS.account.get_address(), self.id_hash, self.signer)
             await AARS.forget_objects([self])
             [index.remove_record(self) for index in self.get_indices()]
             self.forgotten = True
@@ -181,7 +193,7 @@ class Record(BaseModel, ABC):
         Initializes a record object from its PostMessage.
         :param post: the PostMessage to initialize from.
         """
-        obj = cls(**post.content.content)
+        obj: R = cls(**post.content.content)
         if post.content.ref is None:
             obj.id_hash = post.item_hash
         else:
@@ -195,6 +207,7 @@ class Record(BaseModel, ABC):
         assert obj.id_hash is not None
         obj.current_revision = obj.revision_hashes.index(obj.id_hash)
         obj.timestamp = post.time
+        obj.signer = post.sender
         return obj
 
     @classmethod
@@ -212,6 +225,7 @@ class Record(BaseModel, ABC):
         assert obj.id_hash is not None
         obj.current_revision = obj.revision_hashes.index(obj.id_hash)
         obj.timestamp = post["time"]
+        obj.signer = post["sender"]
         return obj
 
     @classmethod
@@ -276,6 +290,10 @@ class Record(BaseModel, ABC):
         cls.__indices[repr(index)] = index
 
     @classmethod
+    def remove_index(cls: Type[R], index: "Index") -> None:
+        del cls.__indices[repr(index)]
+
+    @classmethod
     def get_index(cls: Type[R], index_name: str) -> "Index[R]":
         """
         Returns an index or any of its subindices by its name. The name is defined as
@@ -325,10 +343,11 @@ class Record(BaseModel, ABC):
         return records
 
     @classmethod
-    async def drop_table(cls: Type[R]) -> List[ItemHash]:
+    async def forget_all(cls: Type[R]) -> List[ItemHash]:
         """
-        Forgets all Records of given type. If invoked on Record, will try to fetch all objects of the current channel
-        and forget them.
+        #TODO: Check correctness
+        Forgets all Records of given type of the authorized user. If invoked on Record, will try to fetch all objects
+        of the current channel and forget them.
 
         :return: The affected item_hashes
         """
@@ -338,6 +357,8 @@ class Record(BaseModel, ABC):
         record_batch = []
         i = 0
         async for record in response:
+            if record.signer != AARS.account.get_address():
+                continue
             record_batch.append(record)
             i += 1
             if i % 50 == 0:
@@ -379,6 +400,10 @@ class Index(Record, Generic[R]):
         """
         if isinstance(on, str):
             on = [on]
+        # check if all properties exist
+        for prop in on:
+            if prop not in record_type.__fields__:
+                raise ValueError(f"Property {prop} does not exist on {record_type.__name__}")
         super(Index, self).__init__(record_type=record_type, index_on=sorted(on))
         record_type.add_index(self)
 
@@ -517,6 +542,10 @@ class AARS:
             channel = cls.channel
         assert isinstance(obj, Record)
         post_type = type(obj).__name__ if obj.id_hash is None else "amend"
+        if obj.id_hash is not None and obj.signer != cls.account.get_address():
+            raise AlephPermissionError(
+                obj.signer, obj.id_hash, cls.account.get_address()
+            )
         message, status = await cls.session.create_post(
             post_content=obj.content,
             post_type=post_type,
@@ -528,6 +557,7 @@ class AARS:
         obj.revision_hashes.append(message.item_hash)
         obj.current_revision = len(obj.revision_hashes) - 1
         obj.timestamp = message.time
+        obj.signer = message.sender
         if cls.cache:
             await cls.cache.set(message.item_hash, obj.json())
         return obj
@@ -547,7 +577,12 @@ class AARS:
             channel = cls.channel
         hashes = []
         for obj in objs:
-            assert obj.id_hash is not None
+            if obj.id_hash is None:
+                raise ValueError("Cannot forget an object that has not been posted.")
+            if obj.signer != cls.account.get_address():
+                raise AlephPermissionError(
+                    obj.signer, obj.id_hash, cls.account.get_address()
+                )
             hashes += [obj.id_hash] + obj.revision_hashes
         forget_task = cls.session.forget(
             hashes=hashes,

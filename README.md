@@ -25,10 +25,14 @@ Index(Book, 'title')
 new_book = await Book(title='Atlas Shrugged', author='Ayn Rand').save()
 
 # retrieve a book by its ID
-book = await Book.fetch(new_book.id_hash)[0]
+book = await Book.fetch(new_book.id_hash).first()
 
-# retrieve a book by its title
-book = await Book.where_eq(title='Atlas Shrugged')[0]
+# retrieve all books
+book = await Book.where_eq(title='Atlas Shrugged').all()
+
+# iterate asynchronously over all books
+async for book in Book.fetch_objects():
+    pass
 ```
 
 
@@ -37,17 +41,17 @@ book = await Book.where_eq(title='Atlas Shrugged')[0]
 - [x] Versioning
   - [x] Use "amend" post_type for updates
   - [x] Fetch revisions with messages endpoint
-- [ ] Basic indexing/querying operations
+- [x] Basic indexing/querying operations
   - [x] Single-key indexing 
   - [x] Multi-key indexing
   - [x] Query with list of keys
   - [x] Update indices function
   - [x] Allow multiple items to share one index key
-  - [ ] Add more comparators for where_() queries
-    - [ ] where_gte()
-    - [ ] where_lte()
-    - [ ] where_contains()
-  - [ ] Persist indices to lower startup time
+- [ ] Add more comparators for where_() queries
+  - [ ] where_gte()
+  - [ ] where_lte()
+  - [ ] where_contains()
+- [ ] Persist indices to lower startup time
 - [x] Automatic multi-page fetching
 - [x] Encapsulate Aleph SDK as class
 - [x] Local VM caching
@@ -60,3 +64,5 @@ book = await Book.where_eq(title='Atlas Shrugged')[0]
   - [x] Cache records retrieved by item_hash
   - [ ] Cache records retrieved by fetch_all/timeline
     - [ ] Add item_hashes endpoint to pyaleph for quick cross-checking of cache hashes
+- [x] AsyncIterator over retrieved Records
+- [x] Automated pagination handling on Aleph request and user query side

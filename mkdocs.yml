@@ -1,0 +1,27 @@
+site_name: Aleph Active Record SDK
+theme: material
+markdown_extensions:
+    - smarty
+watch:
+  - src/aars
+plugins:
+  - search
+  - autorefs
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          parser:
+            type: python
+            options:
+              show_root_heading: false
+              selection:
+                members:
+                  - public
+              extraction:
+                docstrings: true
+                signatures: true
+                inheritance: true
+          rendering:
+            show_source: false
+            autodoc: true

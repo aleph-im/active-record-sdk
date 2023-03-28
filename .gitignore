@@ -130,3 +130,6 @@ dmypy.json
 
 # Private account key
 **/device.key
+
+# .idea files
+.idea/

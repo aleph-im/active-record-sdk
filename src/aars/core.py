@@ -1,3 +1,14 @@
+"""
+Aleph Active Record SDK
+
+This module provides a simple and intuitive way to interact with decentralized data storage systems, such as blockchain networks.
+
+AARS allows you to create data models and store them on a blockchain in a way that is easily searchable and retrievable. It provides functionality for indexing and querying data based on multiple fields, as well as support for versioning and updating records.
+
+To get started, simply define your data model as a subclass of the Record class and use the save() method to store new records on the blockchain. You can then use the various query methods provided by AARS to retrieve the data.
+
+For more information on how to use AARS, please see the documentation.
+"""
 import asyncio
 import math
 import warnings
@@ -37,7 +48,7 @@ from .utils import (
     PageableRequest,
     EmptyAsyncIterator,
 )
-from .exceptions import AlreadyForgottenError, AlephPermissionError
+from .exceptions import AlreadyForgottenError, AlephPermissionError, NotStoredError
 
 logger = logging.getLogger(__name__)
 R = TypeVar("R", bound="Record")
@@ -47,15 +58,23 @@ class Record(BaseModel, ABC):
     """
     A basic record which is persisted on Aleph decentralized storage.
 
-    Records can be updated: revision numbers begin at 0 (original upload) and increment for each `save()` call.
+    Records can be updated: revision numbers begin at 0 (original upload) and increment for each `.save()` call.
 
-    Previous revisions can be restored by calling `fetch_revision(rev_no=<number>)` or `fetch_revision(
-    rev_hash=<item_hash of inserted update>)`.
+    Previous revisions can be restored by calling
+    ```python
+    fetch_revision(rev_no=<number>)
+    ```
+    or
+    ```python
+    fetch_revision(rev_hash=<item_hash of inserted update>)
+    ```
 
-    They can also be forgotten: Aleph will ask the network to forget given item, in order to allow for GDPR-compliant
+    They can also be forgotten: Aleph will ask the network to forget given item, in order to allow for **GDPR-compliant**
     applications.
 
     Records have an `indices` class attribute, which allows one to select an index and query it with a key.
+    Note:
+        It uses `TypeVar("R", bound="Record")` to allow for type hinting of subclasses.
     """
 
     forgotten: bool = False
@@ -87,7 +106,8 @@ class Record(BaseModel, ABC):
     @property
     def content(self) -> Dict[str, Any]:
         """
-        :return: content dictionary of the object, as it is to be stored on Aleph.
+        Returns:
+            A dictionary of the object's content, as it is to be stored on Aleph inside the `content` property of the POST message.
         """
         return self.dict(
             exclude={
@@ -100,9 +120,12 @@ class Record(BaseModel, ABC):
             }
         )
 
-    async def update_revision_hashes(self: R):
+    async def update_revision_hashes(self: R) -> R:
         """
         Updates the list of available revision hashes, in order to fetch these.
+
+        Returns:
+            The object with the updated revision hashes.
         """
         assert self.id_hash is not None
         self.revision_hashes = [self.id_hash] + await async_iterator_to_list(
@@ -111,19 +134,23 @@ class Record(BaseModel, ABC):
         if self.current_revision is None:
             # latest revision
             self.current_revision = len(self.revision_hashes) - 1
+        return self
 
     async def fetch_revision(
         self: R, rev_no: Optional[int] = None, rev_hash: Optional[str] = None
     ) -> R:
         """
-        Fetches a revision of the object by revision number (0 => original) or revision hash.
-        :param rev_no: the revision number of the revision to fetch.
-        :param rev_hash: the hash of the revision to fetch.
+        Fetches a Record's revision by its revision number (0 => original record) or revision hash.
+
+        Args:
+            rev_no: The revision number of the revision to fetch. Negative numbers are allowed and count from the end.
+            rev_hash: The hash of the revision to fetch.
+
+        Returns:
+            The object with the given revision.
         """
-        assert (
-            self.id_hash is not None
-        ), "Cannot fetch revision of an object which has not been posted yet."
-        assert self.current_revision is not None
+        if self.id_hash is None:
+            raise NotStoredError(self)
 
         if rev_no is not None:
             if rev_no < 0:
@@ -136,7 +163,7 @@ class Record(BaseModel, ABC):
                 self.current_revision = rev_no
         elif rev_hash is not None:
             rev_item_hash = ItemHash(rev_hash)
-            if rev_hash == self.revision_hashes[self.current_revision]:
+            if self.current_revision and rev_hash == self.revision_hashes[self.current_revision]:
                 return self
             try:
                 self.current_revision = self.revision_hashes.index(rev_item_hash)
@@ -154,10 +181,12 @@ class Record(BaseModel, ABC):
 
         return self
 
-    async def save(self):
+    async def save(self: R) -> R:
         """
         Posts a new item to Aleph or amends it, if it was already posted. Will add new items to local indices.
         For indices to be persisted on Aleph, you need to call `save()` on the index itself or `cls.save_indices()`.
+        Returns:
+            The updated object itself.
         """
         await AARS.post_or_amend_object(self)
         if self.current_revision == 0:
@@ -165,25 +194,47 @@ class Record(BaseModel, ABC):
         return self
 
     def _index(self):
+        """
+        Adds the object to all indices it is supposed to be in.
+        Returns:
+            The object itself for chaining.
+        """
         for index in self.get_indices():
             index.add_record(self)
         self.__indexed_items.add(self.id_hash)
 
     @classmethod
-    def is_indexed(cls, id_hash: Union[ItemHash, str]):
+    def is_indexed(cls: Type[R], id_hash: Union[ItemHash, str]) -> bool:
+        """
+        Checks if a given object is indexed.
+        Args:
+            id_hash: The hash of the object to check.
+        Returns:
+            True if the object is indexed, False otherwise.
+        """
         return id_hash in cls.__indexed_items
 
-    async def forget(self):
+    async def forget(self: R) -> R:
         """
-        Orders Aleph to forget a specific object with all its revisions.
-        The forgotten object should be deleted afterward, as it is useless now.
+        Orders Aleph to forget a specific object with all its revisions. Will remove the object from all indices.
+        The content of all POST messages will be deleted, but the hashes and timestamps will remain.
+        Note:
+            The forgotten object should be deleted afterwards, as it is useless now.
+        Raises:
+            NotStoredError: If the object is not stored on Aleph.
+            AlephPermissionError: If the object is not owned by the current account.
+            AlreadyForgottenError: If the object was already forgotten.
         """
+
         if not self.forgotten:
+            if self.id_hash is None:
+                raise NotStoredError(self)
             if self.signer != AARS.account.get_address():
                 raise AlephPermissionError(AARS.account.get_address(), self.id_hash, self.signer)
             await AARS.forget_objects([self])
             [index.remove_record(self) for index in self.get_indices()]
             self.forgotten = True
+            return self
         else:
             raise AlreadyForgottenError(self)
 
@@ -191,7 +242,10 @@ class Record(BaseModel, ABC):
     async def from_post(cls: Type[R], post: PostMessage) -> R:
         """
         Initializes a record object from its PostMessage.
-        :param post: the PostMessage to initialize from.
+        Args:
+            post: The PostMessage to initialize from.
+        Returns:
+            The initialized object.
         """
         obj: R = cls(**post.content.content)
         if post.content.ref is None:
@@ -214,7 +268,10 @@ class Record(BaseModel, ABC):
     async def from_dict(cls: Type[R], post: Dict[str, Any]) -> R:
         """
         Initializes a record object from its raw Aleph data.
-        :post: Raw Aleph data.
+        Args:
+            post: The raw Aleph data to initialize from.
+        Returns:
+            The initialized object.
         """
         obj = cls(**post["content"])
         if post.get("ref") is None:
@@ -234,6 +291,10 @@ class Record(BaseModel, ABC):
     ) -> PageableResponse[R]:
         """
         Fetches one or more objects of given type by its/their item_hash[es].
+        Args:
+            hashes: The item_hash[es] of the objects to fetch.
+        Returns:
+            A pageable response object, which can be asynchronously iterated over.
         """
         if not isinstance(hashes, List):
             hashes = [hashes]
@@ -245,9 +306,8 @@ class Record(BaseModel, ABC):
         """
         Fetches all objects of given type.
 
-        WARNING: This can take quite some time, depending on the amount of records to be fetched.
-
-        :return: A PageableRequest, which can be used to iterate, paginate or fetch all results at once.
+        Returns:
+            A pageable request object, which can be asynchronously iterated over.
         """
         return PageableRequest(AARS.fetch_records, record_type=cls)
 
@@ -255,30 +315,46 @@ class Record(BaseModel, ABC):
     def where_eq(cls: Type[R], **kwargs) -> PageableResponse[R]:
         """
         Queries an object by given properties through an index, in order to fetch applicable records.
-        An index name is defined as '<object_class>.[<object_properties>.]' and is initialized by creating
-        an Index instance, targeting a BaseRecord class with a list of properties.
+        An index name is defined as
+        ```
+        <object_class>.[<object_properties>.]
+        ```
+        and is initialized by creating an `Index` instance, targeting a BaseRecord class with a list of properties.
 
-        >>> Index(MyRecord, ['property1', 'property2'])
+        ```python
+        Index(MyRecord, ['property1', 'property2'])
+        ```
 
         This will create an index named 'MyRecord.property1.property2' which can be queried with:
 
-        >>> MyRecord.where_eq(property1='value1', property2='value2')
+        ```python
+        MyRecord.where_eq(property1='value1', property2='value2')
+        ```
 
         If no index is defined for the given properties, an IndexError is raised.
 
         If only a part of the keys is indexed for the given query, a fallback index is used and locally filtered.
 
-        It will return a PageableResponse, which can be used to iterate, paginate or fetch all results at once.
+        It will return a PageableResponse, which can be used to iterate
+        ```python
+        response = MyRecord.where_eq(property1='value1', property2='value2')
+        async for record in response:
+            print(record)
+        ```
+        or to paginate
+        ```python
+        response = await MyRecord.where_eq(property1='value1').page(2, 10)
+        ```
+        or to fetch all results at once
+        ```python
+        response = await MyRecord.where_eq(property2='value2').all()
+        ```
 
-        >>> response = MyRecord.where_eq(property1='value1', property2='value2')
-        >>> async for record in response:
-        >>>     print(record)
+        Args:
+            **kwargs: The properties to query for.
 
-        >>> response = await MyRecord.where_eq(property2='value2').all()
-
-        >>> response = await MyRecord.where_eq(property1='value1').page(2, 10)
-
-        :param kwargs: The properties to query for.
+        Returns:
+            PageableResponse[R]: The properties to query for.
         """
         query = IndexQuery(cls, **kwargs)
         index = cls.get_index(query.get_index_name())
@@ -287,20 +363,33 @@ class Record(BaseModel, ABC):
 
     @classmethod
     def add_index(cls: Type[R], index: "Index") -> None:
+        """
+        Adds an index to the class. This allows the index to be used for queries and will be automatically updated
+        when records are created or updated.
+        Args:
+            index: The index to add.
+        """
         cls.__indices[repr(index)] = index
 
     @classmethod
     def remove_index(cls: Type[R], index: "Index") -> None:
+        """
+        Removes an index from the class. This stops the index from being used for queries or updates.
+        Args:
+            index: The index to remove.
+        """
         del cls.__indices[repr(index)]
 
     @classmethod
     def get_index(cls: Type[R], index_name: str) -> "Index[R]":
         """
         Returns an index or any of its subindices by its name. The name is defined as
-        '<object_class>.[<object_properties>.]' with the properties being sorted alphabetically. For example,
-        Book.author.title is a valid index name, while Book.title.author is not.
-        :param index_name: The name of the index to fetch.
-        :return: The index instance or a subindex.
+        `"<object_class>.[<object_properties>.]"` with the properties being sorted alphabetically. For example,
+        `"Book.author.title"` is a valid index name, while `"Book.title.author"` is not.
+        Args:
+            index_name: The name of the index to fetch.
+        Returns:
+            The index instance or a subindex.
         """
         index = cls.__indices.get(index_name)
         if index is None:
@@ -317,22 +406,32 @@ class Record(BaseModel, ABC):
 
     @classmethod
     def get_indices(cls: Type[R]) -> List["Index"]:
+        """
+        Returns all indices of a given Record subclass.
+        Returns:
+            A list of existing indices.
+        """
         if cls == Record:
             return list(cls.__indices.values())
         return [index for index in cls.__indices.values() if index.record_type == cls]
 
     @classmethod
     async def save_indices(cls: Type[R]) -> None:
-        """Updates all indices of given type."""
+        """Updates all indices of given Record subclass."""
         tasks = [index.save() for index in cls.get_indices()]
         await asyncio.gather(*tasks)
 
     @classmethod
     async def regenerate_indices(cls: Type[R]) -> List[R]:
         """
-        Regenerates all indices of given type.
+        Regenerates all indices of given Record subtype.
+        If invoked on Record, will try to fetch all objects of the current channel and index them.
 
-        WARNING: This can take quite some time, depending on the amount of records to be fetched.
+        WARNING:
+            This can take quite some time, depending on the amount of records to be fetched.
+
+        Return:
+            A list of all records that were indexed.
         """
         response = cls.fetch_objects()
 
@@ -345,11 +444,10 @@ class Record(BaseModel, ABC):
     @classmethod
     async def forget_all(cls: Type[R]) -> List[ItemHash]:
         """
-        #TODO: Check correctness
         Forgets all Records of given type of the authorized user. If invoked on Record, will try to fetch all objects
         of the current channel and forget them.
-
-        :return: The affected item_hashes
+        Return:
+            The affected item_hashes
         """
         response = cls.fetch_objects()
 
@@ -374,7 +472,19 @@ class Record(BaseModel, ABC):
 
 class Index(Record, Generic[R]):
     """
-    Class to define Indices.
+    An Index is a data structure that allows for fast lookup of records by their properties.
+    It is used internally by the Record class and once created, is automatically updated when records are created or
+    updated.
+
+    It is not recommended using the Index class directly, but rather through the `where_eq` method of the `Record`
+    class.
+
+    Example:
+        ```
+        MyRecord.where_eq(foo='bar')
+        ```
+        If `MyRecord` has an index on the property `foo`, this will return all records of type `MyRecord` where `foo` is
+        equal to `'bar'`.
     """
 
     record_type: Type[R]
@@ -385,18 +495,19 @@ class Index(Record, Generic[R]):
         """
         Creates a new index given a record_type and a single or multiple properties to index on.
 
-        >>> Index(MyRecord, 'foo')
+        Example:
+            ```
+            Index(MyRecord, 'foo')
+            ```
+            Indexes all records of type MyRecord on the property 'foo'.
 
-        This will create an index named 'MyRecord.foo', which is stored in the `MyRecord` class.
-        It is not recommended using the index directly, but rather through the `where_eq` method of the `Record` class
-        like so:
+        This will create an index named `'MyRecord.foo'`, which is stored in the `MyRecord` class.
 
-        >>> MyRecord.where_eq(foo='bar')
-
-        This returns all records of type MyRecord where foo is equal to 'bar'.
-
-        :param record_type: The record_type to index.
-        :param on: The properties to index on.
+        Args:
+            record_type: The record_type to index.
+            on: The properties to index on.
+        Returns:
+            The index instance.
         """
         if isinstance(on, str):
             on = [on]
@@ -417,7 +528,20 @@ class Index(Record, Generic[R]):
         """
         Fetches records with given values for the indexed properties.
 
-        :param query: The query to lookup items with.
+        Example:
+            ```
+            index = Index(MyRecord, 'foo')
+            index_query = IndexQuery(MyRecord, **{'foo': 'bar'})
+            index.lookup(index_query)
+            ```
+            Returns all records of type `MyRecord` where `foo` is equal to `'bar'`.
+            This is an anti-pattern, as the `IndexQuery` should be created by calling `MyRecord.where_eq(foo='bar')`
+            instead.
+
+        Args:
+            query: The query to execute.
+        Returns:
+            An async iterator over the records.
         """
         assert query.record_type == self.record_type
         id_hashes: Optional[Set[str]]
@@ -500,7 +624,7 @@ class AARS:
     ):
         """
         Initializes the SDK with an account and a channel.
-        :param cache: Whether to use Aleph VM caching when running AARS code.
+        :param cache: Whether to use Aleph VM caching when running AARS.md code.
         :param account: Account with which to sign the messages.
         :param channel: Channel to which to send the messages.
         :param api_url: The API URL to use. Defaults to an official Aleph API host.
@@ -542,9 +666,9 @@ class AARS:
             channel = cls.channel
         assert isinstance(obj, Record)
         post_type = type(obj).__name__ if obj.id_hash is None else "amend"
-        if obj.id_hash is not None and obj.signer != cls.account.get_address():
+        if obj.id_hash is not None and obj.signer is not None and obj.signer != cls.account.get_address():
             raise AlephPermissionError(
-                obj.signer, obj.id_hash, cls.account.get_address()
+                cls.account.get_address(), obj.id_hash, obj.signer
             )
         message, status = await cls.session.create_post(
             post_content=obj.content,

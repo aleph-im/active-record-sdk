@@ -1,62 +1,70 @@
-# AARS: Aleph Active Record SDK
+#AARS - Aleph Asynchronous Record Storage
+AARS is a powerful and flexible Python library built on top of the Aleph decentralized storage network, designed to help you build better backends for your decentralized applications. It provides an easy-to-use interface for managing and querying your data, with a focus on performance and versatility.
 
-AARS's goal is to provide simple guardrails for the creation of document databases, based on Aleph's decentralized storage API. It provides tools for modelling, creating and managing decentralized databases, and a set of extensions for the [Aleph Python SDK](https://github.com/aleph-im/aleph-client).
+##Features
+- Asynchronous, high-performance data storage and retrieval
+- Customizable schema with support for different data types
+- Indexing for efficient querying
+- Revision history tracking for records
+- Support for forgetting data (GDPR compliant)
+- Built-in pagination for large result sets
 
-You can create a model of your planned database by using the `Record` class.
+##Installation
+Install AARS using pip:
 
-## Usage
-
-```python
-from aars import Record, Index, AARS
-
-
-class Book(Record):
-  title: str
-  author: str
-
-
-# initialize the SDK and post subsequent requests to the "MyLibrary" channel on Aleph
-AARS(channel="MyLibrary")
-
-# create and add an index for the book title
-Index(Book, 'title')
-
-# create & upload a book
-new_book = await Book(title='Atlas Shrugged', author='Ayn Rand').save()
-
-# retrieve a book by its ID
-book = await Book.fetch(new_book.id_hash)[0]
-
-# retrieve a book by its title
-book = await Book.where_eq(title='Atlas Shrugged')[0]
+```shell
+pip install aars
 ```
 
+##Getting Started
+To get started with AARS, you will need to define your data schema by creating classes that inherit from Record. These classes represent the objects you want to store and query on the Aleph network.
 
-## ToDo:
-- [x] Basic CRUD operations
-- [x] Versioning
-  - [x] Use "amend" post_type for updates
-  - [x] Fetch revisions with messages endpoint
-- [ ] Basic indexing/querying operations
-  - [x] Single-key indexing 
-  - [x] Multi-key indexing
-  - [x] Query with list of keys
-  - [x] Update indices function
-  - [x] Allow multiple items to share one index key
-  - [ ] Add more comparators for where_() queries
-    - [ ] where_gte()
-    - [ ] where_lte()
-    - [ ] where_contains()
-  - [ ] Persist indices to lower startup time
-- [x] Automatic multi-page fetching
-- [x] Encapsulate Aleph SDK as class
-- [x] Local VM caching
-- [x] Add tests
-- [x] Add documentation
-- [x] Add to indices when fetching records
-- [x] Test where_eq() for fetching multiple records
-- [x] Add reindexing function on AARS
-- [ ] Add caching of records
-  - [x] Cache records retrieved by item_hash
-  - [ ] Cache records retrieved by fetch_all/timeline
-    - [ ] Add item_hashes endpoint to pyaleph for quick cross-checking of cache hashes
+Here's an example of how you can implement a simple social media platform, that we'll call "Chirper":
+
+```python
+from src.aars import Record, Index
+from typing import List
+
+class User(Record):
+    username: str
+    display_name: str
+    bio: Optional[str]
+
+class Chirp(Record):
+    author: User
+    content: str
+    likes: int
+    timestamp: int
+```
+In this example, we have a User class representing a user of Chirper, and a Chirp class representing a user's message. Now, let's create some indices to make querying our data more efficient:
+
+```python
+Index(User, 'username')
+Index(Chirp, 'author')
+Index(Chirp, 'timestamp')
+```
+With the schema defined and indices created, we can now perform various operations, such as creating new records, querying records, and updating records:
+
+```python
+# Create a new user
+new_user = await User(username='chirpy_user', display_name='Chirpy User', bio='I love chirping!').save()
+
+# Create a new chirp
+new_chirp = await Chirp(author=new_user, content='Hello, Chirper!', likes=0, timestamp=int(time.time())).save()
+
+# Query chirps by author
+chirps_by_author = await Chirp.where_eq(author=new_user).all()
+
+# Update a chirp
+new_chirp.likes += 1
+updated_chirp = await new_chirp.save()
+```
+
+##Documentation
+For detailed documentation, including advanced features such as revision history, forgetting data, and pagination, refer to the docs folder in the repository or visit the official documentation website.
+
+##Contributing
+Contributions to AARS are welcome! If you have found a bug, want to suggest an improvement, or have a question, feel free to open an issue on the GitHub repository.
+
+##License
+AARS is released under the MIT License.

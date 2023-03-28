@@ -46,6 +46,11 @@ def test_invalid_index_created():
             Record.remove_index(index)
 
 
+def test_duplicate_index_creation():
+    with pytest.raises(ValueError):
+        Index(Book, 'title')
+
+
 @pytest.mark.asyncio
 async def test_store_and_index():
     new_book = await Book(title='Atlas Shrugged', author='Ayn Rand').save()
@@ -150,3 +155,50 @@ async def test_sync_indices():
     assert len(list(Book.get_indices()[0].hashmap.values())) > 0
     assert len(list(Book.get_indices()[1].hashmap.values())) > 0
     assert len(list(Library.get_indices()[0].hashmap.values())) > 0
+
+
+@pytest.mark.asyncio
+async def test_empty_record_save():
+    class EmptyRecord(Record):
+        pass
+
+    with pytest.raises(ValueError):
+        await EmptyRecord().save()
+
+
+@pytest.mark.asyncio
+async def test_dict_field_save():
+    class BookWithDictAuthor(Record):
+        title: str
+        author: dict
+
+    book = await BookWithDictAuthor(title='Test Book', author={'first': 'John', 'last': 'Doe'}).save()
+    fetched_book = await BookWithDictAuthor.fetch(book.id_hash).first()
+    assert fetched_book.author == {'first': 'John', 'last': 'Doe'}
+
+
+@pytest.mark.asyncio
+async def test_negative_limit_pagination():
+    with pytest.raises(ValueError):
+        await Book.fetch_objects().page(1, -1)
+
+
+@pytest.mark.asyncio
+async def test_large_page_size_pagination():
+    page = await Book.fetch_objects().page(1, 100)
+    assert len(page) <= 100
+
+
+@pytest.mark.asyncio
+async def test_non_existent_revision():
+    book = await Book(title='Test Book', author='John Doe').save()
+    with pytest.raises(KeyError):
+        await book.fetch_revision(rev_no=10)
+
+
+@pytest.mark.asyncio
+async def test_save_without_changes():
+    book = await Book(title='Test Book', author='John Doe').save()
+    original_revision_count = len(book.revision_hashes)
+    book = await book.save()
+    assert len(book.revision_hashes) == original_revision_count

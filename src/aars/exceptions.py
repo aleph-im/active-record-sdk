@@ -1,6 +1,5 @@
 class AlephError(Exception):
     """Base class for exceptions in this module."""
-
     pass
 
 
@@ -32,6 +31,9 @@ class AlreadyUsedError(AlephError):
 
 
 class AlreadyForgottenError(AlephError):
+    """
+    Exception raised when a user tries to forget an item that has already been forgotten.
+    """
     def __init__(
         self,
         content,
@@ -76,16 +78,15 @@ class InvalidMessageTypeError(AlephError):
         super().__init__(self.message)
 
 
-class SchemaAlreadyExists(AlephError):
-    """Exception raised when user tries to update a schema that already exists, without incrementing the version."""
+class NotStoredError(AlephError):
+    """Exception raised when a requested object is not stored on Aleph and has no `item_hash`."""
 
     def __init__(
         self,
-        schema,
-        message="Schema for channel '{0}' and owner '{1}' already exists. Try using upgrade() "
-        "instead.",
+        record,
+        message="Record '{0}'\nis not stored on Aleph. It is required to store the "
+        "record with .save() before calling this method.",
     ):
-        self.channel = schema["channel"]
-        self.owner = schema["owner"]
-        self.message = f"{message.format(self.channel, self.owner)}"
+        self.type = record.content
+        self.message = f"{message.format(self.type)}"
         super().__init__(self.message)

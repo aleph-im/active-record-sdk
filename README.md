@@ -1,4 +1,4 @@
-#AARS - Aleph Asynchronous Record Storage
+#AARS - Aleph Active Record SDK
 AARS is a powerful and flexible Python library built on top of the Aleph decentralized storage network, designed to help you build better backends for your decentralized applications. It provides an easy-to-use interface for managing and querying your data, with a focus on performance and versatility.
 
 ##Features
@@ -22,8 +22,9 @@ To get started with AARS, you will need to define your data schema by creating c
 Here's an example of how you can implement a simple social media platform, that we'll call "Chirper":
 
 ```python
-from src.aars import Record, Index
+from src.aars import Record, Index, AARS
 from typing import List
+
 
 class User(Record):
     username: str

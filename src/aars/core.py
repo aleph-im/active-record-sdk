@@ -62,19 +62,18 @@ class Record(BaseModel, ABC):
 
     Previous revisions can be restored by calling
     ```python
-    fetch_revision(rev_no=<number>)
+    await record.fetch_revision(rev_no=0)
     ```
     or
     ```python
-    fetch_revision(rev_hash=<item_hash of inserted update>)
+    await record.fetch_revision(rev_hash="abc123")
     ```
 
     They can also be forgotten: Aleph will ask the network to forget given item, in order to allow for **GDPR-compliant**
     applications.
 
     Records have an `indices` class attribute, which allows one to select an index and query it with a key.
-    Note:
-        It uses `TypeVar("R", bound="Record")` to allow for type hinting of subclasses.
+    !!! note "It uses `TypeVar("R", bound="Record")` to allow for type hinting of subclasses."
     """
 
     forgotten: bool = False
@@ -218,8 +217,7 @@ class Record(BaseModel, ABC):
         """
         Orders Aleph to forget a specific object with all its revisions. Will remove the object from all indices.
         The content of all POST messages will be deleted, but the hashes and timestamps will remain.
-        Note:
-            The forgotten object should be deleted afterwards, as it is useless now.
+        !!! note "The forgotten object should be deleted afterwards, as it is useless now."
         Raises:
             NotStoredError: If the object is not stored on Aleph.
             AlephPermissionError: If the object is not owned by the current account.
@@ -316,8 +314,8 @@ class Record(BaseModel, ABC):
         """
         Queries an object by given properties through an index, in order to fetch applicable records.
         An index name is defined as
-        ```
-        <object_class>.[<object_properties>.]
+        ```python
+        "Class.property1.property2"
         ```
         and is initialized by creating an `Index` instance, targeting a BaseRecord class with a list of properties.
 
@@ -335,26 +333,10 @@ class Record(BaseModel, ABC):
 
         If only a part of the keys is indexed for the given query, a fallback index is used and locally filtered.
 
-        It will return a PageableResponse, which can be used to iterate
-        ```python
-        response = MyRecord.where_eq(property1='value1', property2='value2')
-        async for record in response:
-            print(record)
-        ```
-        or to paginate
-        ```python
-        response = await MyRecord.where_eq(property1='value1').page(2, 10)
-        ```
-        or to fetch all results at once
-        ```python
-        response = await MyRecord.where_eq(property2='value2').all()
-        ```
-
         Args:
             **kwargs: The properties to query for.
-
         Returns:
-            PageableResponse[R]: The properties to query for.
+            A pageable response object, which can be asynchronously iterated over.
         """
         query = IndexQuery(cls, **kwargs)
         index = cls.get_index(query.get_index_name())
@@ -427,10 +409,9 @@ class Record(BaseModel, ABC):
         Regenerates all indices of given Record subtype.
         If invoked on Record, will try to fetch all objects of the current channel and index them.
 
-        WARNING:
-            This can take quite some time, depending on the amount of records to be fetched.
+        !!! warning "This can take quite some time, depending on the amount of records to be fetched."
 
-        Return:
+        Returns:
             A list of all records that were indexed.
         """
         response = cls.fetch_objects()
@@ -446,8 +427,8 @@ class Record(BaseModel, ABC):
         """
         Forgets all Records of given type of the authorized user. If invoked on Record, will try to fetch all objects
         of the current channel and forget them.
-        Return:
-            The affected item_hashes
+        Returns:
+            A list of all item hashes that were forgotten.
         """
         response = cls.fetch_objects()
 
@@ -480,7 +461,7 @@ class Index(Record, Generic[R]):
     class.
 
     Example:
-        ```
+        ```python
         MyRecord.where_eq(foo='bar')
         ```
         If `MyRecord` has an index on the property `foo`, this will return all records of type `MyRecord` where `foo` is
@@ -496,7 +477,7 @@ class Index(Record, Generic[R]):
         Creates a new index given a record_type and a single or multiple properties to index on.
 
         Example:
-            ```
+            ```python
             Index(MyRecord, 'foo')
             ```
             Indexes all records of type MyRecord on the property 'foo'.
@@ -505,9 +486,7 @@ class Index(Record, Generic[R]):
 
         Args:
             record_type: The record_type to index.
-            on: The properties to index on.
-        Returns:
-            The index instance.
+            on: The properties to index on. Can be a single property or a list/tuple of properties.
         """
         if isinstance(on, str):
             on = [on]
@@ -529,7 +508,7 @@ class Index(Record, Generic[R]):
         Fetches records with given values for the indexed properties.
 
         Example:
-            ```
+            ```python
             index = Index(MyRecord, 'foo')
             index_query = IndexQuery(MyRecord, **{'foo': 'bar'})
             index.lookup(index_query)
@@ -606,6 +585,12 @@ class Index(Record, Generic[R]):
 
 
 class AARS:
+    """
+    The AARS class is the main entry point for the Aleph Active Record SDK.
+    It provides versatile methods to create, update, delete and query records.
+
+
+    """
     account: Account
     channel: str
     api_url: str

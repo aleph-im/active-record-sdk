@@ -1,3 +1,13 @@
+"""
+This module contains utility functions and classes for the AARS library.
+Most notably it contains the [IndexQuery][aars.utils.IndexQuery] class,
+which prepares a query for records using an [Index][aars.core.Index].
+
+Also, it contains the [PageableResponse][aars.utils.PageableResponse] and
+[PageableRequest][aars.utils.PageableRequest] classes, which allow for
+easy pagination of queries and efficient retrieval of large amounts of data
+in the asynchronous environment of AARS.
+"""
 import operator
 from itertools import *
 from typing import (
@@ -20,23 +30,55 @@ T = TypeVar("T")
 
 
 class EmptyAsyncIterator(AsyncIterator[T]):
+    """
+    An async iterator that can be returned when there are no results.
+    """
     async def __anext__(self) -> T:
         raise StopAsyncIteration
 
 
 class IndexQuery(OrderedDict, Generic[T]):
+    """
+    A query for a specific index. The keys are the index keys, and the values are the values to query for.
+    It is an ordered dict in which the order is alphabetically determined by the keys, so that the same query
+    will always have the same string representation. This is used to determine the index name.
+    """
     record_type: Type[T]
 
     def __init__(self, record_type: Type[T], **kwargs):
+        """
+        Create a new IndexQuery.
+        Args:
+            record_type: The type of record that this query is for.
+            **kwargs: The keys and values to query for.
+        """
         super().__init__(
             {item[0]: item[1] for item in sorted(kwargs.items()) if item[1] is not None}
         )
         self.record_type = record_type
 
     def get_index_name(self) -> str:
+        """
+        Get the name of the index that this query would use.
+        Returns:
+            The name of the index to query.
+        """
         return self.record_type.__name__ + "." + ".".join(self.keys())
 
     def get_subquery(self, keys: List[str]) -> "IndexQuery":
+        """
+        Get a subquery of this query, containing only the specified keys.
+        Example:
+            ```python
+            query = IndexQuery(record_type=MyRecord, a=1, b=2, c=3)
+            subquery = query.get_subquery(["a", "c"])
+            assert subquery == IndexQuery(record_type=MyRecord, a=1, c=3)
+            ```
+        Args:
+            keys: The keys to include in the subquery.
+        Returns:
+            The subquery.
+        """
         return IndexQuery(
             self.record_type, **{key: arg for key, arg in self.items() if key in keys}
         )
@@ -46,6 +88,21 @@ class PageableResponse(AsyncIterator[T], Generic[T]):
     """
     A wrapper around an AsyncIterator that allows for easy pagination and iteration, while also preventing multiple
     iterations. This is mainly used for nicer syntax when not using the async generator syntax.
+
+    Example: Iterate over all records
+        ```python
+        async for record in PageableResponse(record_generator):
+            print(record)
+        ```
+
+    Note: Consuming the generator
+        Calling _any_ of the methods will consume the generator, so it is **not** possible to iterate over the records
+        **after** calling any of the methods.
+
+    Note: Iteration vs. Fetching all records at once
+        If you plan to stop iterating over the records after a certain point, it is more efficient to use the
+        `async for` syntax, as it will consume less calls to the Aleph Message API. If you want to get all records,
+        AARS will automatically use the most efficient amount of API calls to do so.
     """
 
     record_generator: AsyncIterator[T]
@@ -55,12 +112,35 @@ class PageableResponse(AsyncIterator[T], Generic[T]):
         self.record_generator = record_generator
 
     async def all(self) -> List[T]:
+        """
+        Fetch all records of this response.
+
+        Example: Fetch all records
+            ```python
+            records = await PageableResponse(record_generator).all()
+            ```
+        Returns:
+            A list of all records.
+        """
         if self.used:
             raise AlreadyUsedError()
         self.used = True
         return await async_iterator_to_list(self.record_generator)
 
     async def page(self, page: int, page_size: int) -> List[T]:
+        """
+        Fetch a page of records.
+
+        Example: Fetch a page of records
+            ```python
+            records = await PageableResponse(record_generator).page(2, 10)
+            ```
+        Args:
+            page: The page number to fetch.
+            page_size: The number of records per page.
+        Returns:
+            A list of records on the specified page.
+        """
         if self.used:
             raise AlreadyUsedError()
         self.used = True
@@ -69,6 +149,16 @@ class PageableResponse(AsyncIterator[T], Generic[T]):
         )
 
     async def first(self) -> Optional[T]:
+        """
+        Fetch the first record, which is usually the most recent record.
+
+        Example: Fetch the first record
+            ```python
+            record = await PageableResponse(record_generator).first()
+            ```
+        Returns:
+            The first record, or None if there are no records.
+        """
         if self.used:
             raise AlreadyUsedError()
         self.used = True
@@ -88,7 +178,8 @@ class PageableResponse(AsyncIterator[T], Generic[T]):
 class PageableRequest(AsyncIterator[T], Generic[T]):
     """
     A wrapper around a request that returns a PageableResponse. Useful if performance improvements can be obtained by
-    passing page and page_size parameters to the request.
+    passing page and page_size parameters to the request. Can be treated like
+    [PageableResponse][aars.utils.PageableResponse].
     """
 
     func: Callable[..., AsyncIterator[T]]
@@ -97,6 +188,13 @@ class PageableRequest(AsyncIterator[T], Generic[T]):
     _response: Optional[PageableResponse] = None
 
     def __init__(self, func: Callable[..., AsyncIterator[T]], *args, **kwargs):
+        """
+        Create a new PageableRequest. The request will be triggered when the first record is requested.
+        Args:
+            func: The function to call to get the record generator.
+            *args: The arguments to pass to the function.
+            **kwargs: The keyword arguments to pass to the function.
+        """
         self.func = func
         self.args = args
         self.kwargs = kwargs
@@ -113,6 +211,9 @@ class PageableRequest(AsyncIterator[T], Generic[T]):
 
     @property
     def response(self):
+        """
+        The [PageableResponse][aars.utils.PageableResponse] of this request.
+        """
         if self._response is None:
             self._response = PageableResponse(
                 self.func(*self.args, **self.kwargs, page=-1, page_size=20)
@@ -120,15 +221,33 @@ class PageableRequest(AsyncIterator[T], Generic[T]):
         return self._response
 
     async def all(self) -> List[T]:
+        """
+        Trigger the request and return all records.
+        Returns:
+            A list of all records.
+        """
         return await self.response.all()
 
-    async def page(self, page, page_size) -> List[T]:
+    async def page(self, page: int, page_size: int) -> List[T]:
+        """
+        Trigger the request and return a page of records.
+        Args:
+            page: The page number to fetch.
+            page_size: The number of records per page.
+        Returns:
+            A list of records on the specified page.
+        """
         self._response = PageableResponse(
             self.func(*self.args, **self.kwargs, page=page, page_size=page_size)
         )
         return await self.response.all()
 
     async def first(self) -> Optional[T]:
+        """
+        Trigger the request and return the first record.
+        Returns:
+            The first record, or None if there are no records.
+        """
         self._response = PageableResponse(
             self.func(*self.args, **self.kwargs, page=1, page_size=1)
         )
@@ -141,7 +260,9 @@ def subslices(seq):
     Taken from more_itertools.
 
     Example:
+        ```python
         list(subslices([1, 2, 3])) == [[1], [1, 2], [1, 2, 3], [2], [2, 3], [3]]
+        ```
     """
     #
     slices = starmap(slice, combinations(range(len(seq) + 1), 2))
@@ -153,7 +274,9 @@ def possible_index_names(seq):
     Return all possible index names for a sequence of properties.
 
     Example:
+        ```python
         list(possible_index_names(['A', 'B', 'C'])) == [['A'], ['A.B'], ['A.B.C'], ['B'], ['B.C'], ['C']]
+        ```
     """
     return map(".".join, subslices(seq))
 

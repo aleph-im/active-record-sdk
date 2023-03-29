@@ -1,3 +1,9 @@
+"""
+Types of exceptions that can be raised when using the AARS library.
+All exceptions are subclasses of [AlephError][aars.exceptions.AlephError].
+"""
+
+
 class AlephError(Exception):
     """Base class for exceptions in this module."""
     pass

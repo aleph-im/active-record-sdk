@@ -1,9 +1,13 @@
 site_name: Aleph Active Record SDK
 theme: material
 markdown_extensions:
-    - smarty
+  - smarty
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
 watch:
   - src/aars
+  - README.md
 plugins:
   - search
   - autorefs
@@ -23,5 +27,7 @@ plugins:
                 signatures: true
                 inheritance: true
           rendering:
-            show_source: false
+            show_source: true
+            show_signature_annotations: true
+            merge_init_into_class: true
             autodoc: true

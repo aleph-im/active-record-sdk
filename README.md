@@ -64,6 +64,19 @@ updated_chirp = await new_chirp.save()
 ## Documentation
 For detailed documentation, including advanced features such as revision history, forgetting data, and pagination, refer to the docs folder in the repository or visit the official documentation website.
 
+## Building the Docs
+To build the documentation, you will need to install the dependencies listed in the requirements.txt and docs-requirements.txt. Then, run the following command:
+
+```shell
+mkdocs build
+```
+
+You can serve the documentation locally by running the following command:
+
+```shell
+mkdocs serve
+```
+
 ## Contributing
 Contributions to AARS are welcome! If you have found a bug, want to suggest an improvement, or have a question, feel free to open an issue on the GitHub repository.
 

@@ -588,8 +588,6 @@ class AARS:
     """
     The AARS class is the main entry point for the Aleph Active Record SDK.
     It provides versatile methods to create, update, delete and query records.
-
-
     """
     account: Account
     channel: str
@@ -609,11 +607,13 @@ class AARS:
     ):
         """
         Initializes the SDK with an account and a channel.
-        :param cache: Whether to use Aleph VM caching when running AARS.md code.
-        :param account: Account with which to sign the messages.
-        :param channel: Channel to which to send the messages.
-        :param api_url: The API URL to use. Defaults to an official Aleph API host.
-        :param session: An aiohttp session to use. Defaults to a new session.
+        Args:
+            account: Account with which to sign the messages. Defaults to the fallback account.
+            channel: Channel to which to send the messages. Defaults to 'AARS_TEST'.
+            api_url: The API URL to use. Defaults to an official Aleph API host.
+            session: An aiohttp session to use. Defaults to a new session with the given account.
+            cache: An optional Aleph VM cache to cache messages.
+            retry_count: The number of times to retry a failed request. Defaults to 3.
         """
         AARS.account = account if account else get_fallback_account()
         AARS.channel = channel if channel else "AARS_TEST"
@@ -633,6 +633,8 @@ class AARS:
         """
         Synchronizes all the indices created so far, by iteratively fetching all the messages from the channel,
         having post_types of the Record subclasses that have been declared so far.
+
+        !!! warning "This can take quite some time on large databases."
         """
         for record in Record.__subclasses__():
             if record.get_indices():
@@ -643,9 +645,11 @@ class AARS:
         """
         Posts or amends an object to Aleph. If the object is already posted, it's list of revision hashes is updated and
         the object receives the latest revision number.
-        :param obj: The object to post or amend.
-        :param channel: The channel to post the object to. If None, will use the configured channel.
-        :return: The object, as it is now on Aleph.
+        Args:
+            obj: The object to post or amend.
+            channel: The channel to post the object to. If None, will use the configured default channel.
+        Returns:
+            The object with the updated revision hashes and revision number.
         """
         if channel is None:
             channel = cls.channel
@@ -679,8 +683,9 @@ class AARS:
     ):
         """
         Forgets multiple objects from Aleph and local cache. All related revisions will be forgotten too.
-        :param objs: The objects to forget.
-        :param channel: The channel to delete the object from. If None, will use the TEST channel of the object.
+        Args:
+            objs: The objects to forget.
+            channel: The channel to delete the object from. If None, will use the configured default channel.
         """
         if channel is None:
             channel = cls.channel
@@ -715,13 +720,15 @@ class AARS:
     ) -> AsyncIterator[R]:
         """
         Retrieves posts as objects by its aleph item_hash.
-
-        :param record_type: The type of the objects to retrieve.
-        :param item_hashes: Aleph item_hashes of the objects to fetch.
-        :param channel: Channel in which to look for it.
-        :param owner: Account that owns the object.
-        :param page_size: Number of items to fetch per page.
-        :param page: Page number to fetch, based on page_size.
+        Args:
+            record_type: The type of the objects to retrieve.
+            item_hashes: Aleph item_hashes of the objects to fetch.
+            channel: Channel in which to look for it.
+            owner: Account that owns the object.
+            page_size: Number of items to fetch per page.
+            page: Page number to fetch, based on page_size.
+        Returns:
+            An iterator over the found records.
         """
         assert issubclass(record_type, Record)
         channels = None if channel is None else [channel]
@@ -822,11 +829,15 @@ class AARS:
         page=1,
     ) -> AsyncIterator[ItemHash]:
         """Retrieves posts of revisions of an object by its item_hash.
-        :param record_type: The type of the objects to retrieve.
-        :param ref: item_hash of the object, whose revisions to fetch.
-        :param channel: Channel in which to look for it.
-        :param owner: Account that owns the object.
-        :param page: Page number to fetch."""
+        Args:
+            record_type: The type of the objects to retrieve.
+            ref: item_hash of the object, whose revisions to fetch.
+            channel: Channel in which to look for it.
+            owner: Account that owns the object.
+            page: Page number to fetch.
+        Returns:
+            An iterator over the found records.
+        """
         owners = None if owner is None else [owner]
         channels = None if channel is None else [channel]
         if owners is None and channels is None:
@@ -869,9 +880,11 @@ class AARS:
     async def fetch_exact(cls, record_type: Type[R], item_hash: str) -> R:
         """Retrieves the revision of an object by its item_hash of the message. The content will be exactly the same
         as in the referenced message, so no amendments will be applied.
-
-        :param item_hash:
-        :param record_type: The type of the objects to retrieve.
+        Args:
+            record_type: The type of the object to retrieve.
+            item_hash: item_hash of the message, whose content to fetch.
+        Returns:
+            The record in the state it was when the message was created.
         """
         if cls.cache:
             cache_resp = await cls._fetch_records_from_cache(record_type, [item_hash])

@@ -3,15 +3,20 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Deploy docs
-    runs-on: ubuntu-latest
+    name: Build and deploy docs
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout master
         uses: actions/checkout@v1
-
+      - name: Install aleph-sdk-python dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y upgrade
+          sudo apt-get install -y libsecp256k1-dev
       - name: Deploy docs
         uses: mhausenblas/mkdocs-deploy-gh-pages@master
         env:

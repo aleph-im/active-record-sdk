@@ -624,8 +624,8 @@ It provides versatile methods to create, update, delete and query records.</p>
 <code class="highlight language-python"><span class="n">fetch_exact</span><span class="p">(</span><span class="n">record_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">],</span> <span class="n">item_hash</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span></code>
   
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
       <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
   </span>
 
 </h2>
@@ -687,8 +687,8 @@ as in the referenced message, so no amendments will be applied.</p>
 <code class="highlight language-python"><span class="n">fetch_records</span><span class="p">(</span><span class="n">record_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">],</span> <span class="n">item_hashes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ItemHash</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">R</span><span class="p">]</span></code>
   
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
       <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
   </span>
 
 </h2>
@@ -811,8 +811,8 @@ as in the referenced message, so no amendments will be applied.</p>
 <code class="highlight language-python"><span class="n">fetch_revisions</span><span class="p">(</span><span class="n">record_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">],</span> <span class="n">ref</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">page</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">ItemHash</span><span class="p">]</span></code>
   
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
       <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
   </span>
 
 </h2>
@@ -946,8 +946,8 @@ as in the referenced message, so no amendments will be applied.</p>
 <code class="highlight language-python"><span class="n">forget_objects</span><span class="p">(</span><span class="n">objs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">R</span><span class="p">],</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
   
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
       <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
   </span>
 
 </h2>
@@ -1036,8 +1036,8 @@ as in the referenced message, so no amendments will be applied.</p>
 <code class="highlight language-python"><span class="n">post_or_amend_object</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span></code>
   
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
       <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
   </span>
 
 </h2>
@@ -1130,8 +1130,8 @@ the object receives the latest revision number.
 <code class="highlight language-python"><span class="n">sync_indices</span><span class="p">()</span></code>
   
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
       <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
   </span>
 
 </h2>

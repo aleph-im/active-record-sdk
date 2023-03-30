@@ -7,14 +7,16 @@ on:
 
 jobs:
   build:
-    name: Deploy docs
-    runs-on: ubuntu-latest
+    name: Build and deploy docs
+    runs-on: ubuntu-20.04
+    container: ubuntu:xenial
     steps:
       - name: Checkout master
         uses: actions/checkout@v1
       - name: Install dependencies
-        run: "apt-get install -y python3-pip libsecp256k1-dev"
-
+        run: |
+          apt update
+          apt install -y -q libsecp256k1-dev
       - name: Deploy docs
         uses: mhausenblas/mkdocs-deploy-gh-pages@master
         env:

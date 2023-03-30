@@ -8,8 +8,8 @@ on:
 jobs:
   build:
     name: Build and deploy docs
-    runs-on: ubuntu-20.04
-    container: ubuntu:xenial
+    runs-on: ubuntu-18.04
+    container: ubuntu:bionic
     steps:
       - name: Checkout master
         uses: actions/checkout@v1

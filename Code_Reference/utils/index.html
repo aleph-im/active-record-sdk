@@ -1,0 +1,2014 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../Exceptions/">
+      
+      
+        <link rel="next" href="../core/AARS/">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.4">
+    
+    
+      
+        <title>Utils - Aleph Active Record SDK</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.240905d7.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#aars.utils" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Aleph Active Record SDK" class="md-header__button md-logo" aria-label="Aleph Active Record SDK" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Aleph Active Record SDK
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Utils
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Aleph Active Record SDK" class="md-nav__button md-logo" aria-label="Aleph Active Record SDK" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Aleph Active Record SDK
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        AARS - Aleph Active Record SDK
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FastAPI_Cookbook/" class="md-nav__link">
+        FastAPI Cookbook
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Code Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Code Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Exceptions/" class="md-nav__link">
+        Exceptions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Utils
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Utils
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils" class="md-nav__link">
+    aars.utils
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils.EmptyAsyncIterator" class="md-nav__link">
+    EmptyAsyncIterator
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils.IndexQuery" class="md-nav__link">
+    IndexQuery
+  </a>
+  
+    <nav class="md-nav" aria-label="IndexQuery">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.IndexQuery.get_index_name" class="md-nav__link">
+    get_index_name()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.IndexQuery.get_subquery" class="md-nav__link">
+    get_subquery()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils.PageableRequest" class="md-nav__link">
+    PageableRequest
+  </a>
+  
+    <nav class="md-nav" aria-label="PageableRequest">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.PageableRequest.response" class="md-nav__link">
+    response
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.PageableRequest.all" class="md-nav__link">
+    all()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.PageableRequest.first" class="md-nav__link">
+    first()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.PageableRequest.page" class="md-nav__link">
+    page()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils.PageableResponse" class="md-nav__link">
+    PageableResponse
+  </a>
+  
+    <nav class="md-nav" aria-label="PageableResponse">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.PageableResponse.all" class="md-nav__link">
+    all()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.PageableResponse.first" class="md-nav__link">
+    first()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.PageableResponse.page" class="md-nav__link">
+    page()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils.async_iterator_to_list" class="md-nav__link">
+    async_iterator_to_list()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils.possible_index_names" class="md-nav__link">
+    possible_index_names()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils.subslices" class="md-nav__link">
+    subslices()
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+          Core
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_3">
+          <span class="md-nav__icon md-icon"></span>
+          Core
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/AARS/" class="md-nav__link">
+        AARS
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/Index/" class="md-nav__link">
+        Index
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/Record/" class="md-nav__link">
+        Record
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils" class="md-nav__link">
+    aars.utils
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils.EmptyAsyncIterator" class="md-nav__link">
+    EmptyAsyncIterator
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils.IndexQuery" class="md-nav__link">
+    IndexQuery
+  </a>
+  
+    <nav class="md-nav" aria-label="IndexQuery">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.IndexQuery.get_index_name" class="md-nav__link">
+    get_index_name()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.IndexQuery.get_subquery" class="md-nav__link">
+    get_subquery()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils.PageableRequest" class="md-nav__link">
+    PageableRequest
+  </a>
+  
+    <nav class="md-nav" aria-label="PageableRequest">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.PageableRequest.response" class="md-nav__link">
+    response
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.PageableRequest.all" class="md-nav__link">
+    all()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.PageableRequest.first" class="md-nav__link">
+    first()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.PageableRequest.page" class="md-nav__link">
+    page()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils.PageableResponse" class="md-nav__link">
+    PageableResponse
+  </a>
+  
+    <nav class="md-nav" aria-label="PageableResponse">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.PageableResponse.all" class="md-nav__link">
+    all()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.PageableResponse.first" class="md-nav__link">
+    first()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aars.utils.PageableResponse.page" class="md-nav__link">
+    page()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils.async_iterator_to_list" class="md-nav__link">
+    async_iterator_to_list()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils.possible_index_names" class="md-nav__link">
+    possible_index_names()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.utils.subslices" class="md-nav__link">
+    subslices()
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  <h1>Utils</h1>
+
+<div class="doc doc-object doc-module">
+
+
+<a id="aars.utils"></a>
+  <div class="doc doc-contents first">
+  
+      <p>This module contains utility functions and classes for the AARS library.
+Most notably it contains the <a class="autorefs autorefs-internal" href="#aars.utils.IndexQuery">IndexQuery</a> class,
+which prepares a query for records using an <a class="autorefs autorefs-internal" href="../core/Index/#aars.core.Index">Index</a>.</p>
+<p>Also, it contains the <a class="autorefs autorefs-internal" href="#aars.utils.PageableResponse">PageableResponse</a> and
+<a class="autorefs autorefs-internal" href="#aars.utils.PageableRequest">PageableRequest</a> classes, which allow for
+easy pagination of queries and efficient retrieval of large amounts of data
+in the asynchronous environment of AARS.</p>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="aars.utils.EmptyAsyncIterator" class="doc doc-heading">
+        <code>EmptyAsyncIterator</code>
+
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+      <p class="doc doc-class-bases">
+        Bases: <code><span title="typing.AsyncIterator">AsyncIterator</span>[<span title="aars.utils.T">T</span>]</code></p>
+
+  
+      <p>An async iterator that can be returned when there are no results.</p>
+
+
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="aars.utils.IndexQuery" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">IndexQuery</span><span class="p">(</span><span class="n">record_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+      <p class="doc doc-class-bases">
+        Bases: <code><span title="typing.OrderedDict">OrderedDict</span></code>, <code><span title="typing.Generic">Generic</span>[<span title="aars.utils.T">T</span>]</code></p>
+
+  
+      <p>A query for a specific index. The keys are the index keys, and the values are the values to query for.
+It is an ordered dict in which the order is alphabetically determined by the keys, so that the same query
+will always have the same string representation. This is used to determine the index name.</p>
+
+  
+      <p>Create a new IndexQuery.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>record_type</code></td>
+          <td>
+                <code><span title="typing.Type">Type</span>[<span title="aars.utils.T">T</span>]</code>
+          </td>
+          <td><p>The type of record that this query is for.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>**kwargs</code></td>
+          <td>
+          </td>
+          <td><p>The keys and values to query for.</p></td>
+          <td>
+                <code>{}</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+          <details class="quote">
+            <summary>Source code in <code>aars/utils.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a new IndexQuery.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        record_type: The type of record that this query is for.</span>
+<span class="sd">        **kwargs: The keys and values to query for.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="p">{</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+    <span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">record_type</span> <span class="o">=</span> <span class="n">record_type</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="aars.utils.IndexQuery.get_index_name" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">get_index_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Get the name of the index that this query would use.</p>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>str</code>
+          </td>
+          <td><p>The name of the index to query.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/utils.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_index_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the name of the index that this query would use.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        The name of the index to query.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">record_type</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="aars.utils.IndexQuery.get_subquery" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">get_subquery</span><span class="p">(</span><span class="n">keys</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">IndexQuery</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Get a subquery of this query, containing only the specified keys.</p>
+
+<details class="example">
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">query</span> <span class="o">=</span> <span class="n">IndexQuery</span><span class="p">(</span><span class="n">record_type</span><span class="o">=</span><span class="n">MyRecord</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">subquery</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">get_subquery</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+<span class="k">assert</span> <span class="n">subquery</span> <span class="o">==</span> <span class="n">IndexQuery</span><span class="p">(</span><span class="n">record_type</span><span class="o">=</span><span class="n">MyRecord</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</code></pre></div>
+</details>
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>keys</code></td>
+          <td>
+                <code><span title="typing.List">List</span>[str]</code>
+          </td>
+          <td><p>The keys to include in the subquery.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="aars.utils.IndexQuery" href="#aars.utils.IndexQuery">IndexQuery</a></code>
+          </td>
+          <td><p>The subquery.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/utils.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_subquery</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;IndexQuery&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a subquery of this query, containing only the specified keys.</span>
+<span class="sd">    Example:</span>
+<span class="sd">        ```python</span>
+<span class="sd">        query = IndexQuery(record_type=MyRecord, a=1, b=2, c=3)</span>
+<span class="sd">        subquery = query.get_subquery([&quot;a&quot;, &quot;c&quot;])</span>
+<span class="sd">        assert subquery == IndexQuery(record_type=MyRecord, a=1, c=3)</span>
+<span class="sd">        ```</span>
+<span class="sd">    Args:</span>
+<span class="sd">        keys: The keys to include in the subquery.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        The subquery.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">IndexQuery</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">record_type</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">arg</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">arg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">}</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="aars.utils.PageableRequest" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">PageableRequest</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+      <p class="doc doc-class-bases">
+        Bases: <code><span title="typing.AsyncIterator">AsyncIterator</span>[<span title="aars.utils.T">T</span>]</code>, <code><span title="typing.Generic">Generic</span>[<span title="aars.utils.T">T</span>]</code></p>
+
+  
+      <p>A wrapper around a request that returns a PageableResponse. Useful if performance improvements can be obtained by
+passing page and page_size parameters to the request. Can be treated like
+<a class="autorefs autorefs-internal" href="#aars.utils.PageableResponse">PageableResponse</a>.</p>
+
+  
+      <p>Create a new PageableRequest. The request will be triggered when the first record is requested.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>func</code></td>
+          <td>
+                <code><span title="typing.Callable">Callable</span>[..., <span title="typing.AsyncIterator">AsyncIterator</span>[<span title="aars.utils.T">T</span>]]</code>
+          </td>
+          <td><p>The function to call to get the record generator.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>*args</code></td>
+          <td>
+          </td>
+          <td><p>The arguments to pass to the function.</p></td>
+          <td>
+                <code>()</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>**kwargs</code></td>
+          <td>
+          </td>
+          <td><p>The keyword arguments to pass to the function.</p></td>
+          <td>
+                <code>{}</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+          <details class="quote">
+            <summary>Source code in <code>aars/utils.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a new PageableRequest. The request will be triggered when the first record is requested.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        func: The function to call to get the record generator.</span>
+<span class="sd">        *args: The arguments to pass to the function.</span>
+<span class="sd">        **kwargs: The keyword arguments to pass to the function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="aars.utils.PageableRequest.response" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">response</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The <a class="autorefs autorefs-internal" href="#aars.utils.PageableResponse">PageableResponse</a> of this request.</p>
+  </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="aars.utils.PageableRequest.all" class="doc doc-heading">
+<code class="highlight language-python"><span class="nb">all</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Trigger the request and return all records.</p>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="typing.List">List</span>[<span title="aars.utils.T">T</span>]</code>
+          </td>
+          <td><p>A list of all records.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/utils.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Trigger the request and return all records.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of all records.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="aars.utils.PageableRequest.first" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">first</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Trigger the request and return the first record.</p>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[<span title="aars.utils.T">T</span>]</code>
+          </td>
+          <td><p>The first record, or None if there are no records.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/utils.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">first</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Trigger the request and return the first record.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        The first record, or None if there are no records.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_response</span> <span class="o">=</span> <span class="n">PageableResponse</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">page</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="aars.utils.PageableRequest.page" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">page</span><span class="p">(</span><span class="n">page</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Trigger the request and return a page of records.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>page</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>The page number to fetch.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>page_size</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>The number of records per page.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="typing.List">List</span>[<span title="aars.utils.T">T</span>]</code>
+          </td>
+          <td><p>A list of records on the specified page.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/utils.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Trigger the request and return a page of records.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        page: The page number to fetch.</span>
+<span class="sd">        page_size: The number of records per page.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of records on the specified page.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_response</span> <span class="o">=</span> <span class="n">PageableResponse</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">page</span><span class="o">=</span><span class="n">page</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="n">page_size</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="aars.utils.PageableResponse" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">PageableResponse</span><span class="p">(</span><span class="n">record_generator</span><span class="p">:</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">T</span><span class="p">])</span></code>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+      <p class="doc doc-class-bases">
+        Bases: <code><span title="typing.AsyncIterator">AsyncIterator</span>[<span title="aars.utils.T">T</span>]</code>, <code><span title="typing.Generic">Generic</span>[<span title="aars.utils.T">T</span>]</code></p>
+
+  
+      <p>A wrapper around an AsyncIterator that allows for easy pagination and iteration, while also preventing multiple
+iterations. This is mainly used for nicer syntax when not using the async generator syntax.</p>
+
+<details class="example">
+  <summary>Iterate over all records</summary>
+  <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">PageableResponse</span><span class="p">(</span><span class="n">record_generator</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+</code></pre></div>
+</details>
+<details class="note">
+  <summary>Consuming the generator</summary>
+  <p>Calling <em>any</em> of the methods will consume the generator, so it is <strong>not</strong> possible to iterate over the records
+<strong>after</strong> calling any of the methods.</p>
+</details>
+<details class="note">
+  <summary>Iteration vs. Fetching all records at once</summary>
+  <p>If you plan to stop iterating over the records after a certain point, it is more efficient to use the
+<code>async for</code> syntax, as it will consume less calls to the Aleph Message API. If you want to get all records,
+AARS will automatically use the most efficient amount of API calls to do so.</p>
+</details>
+
+          <details class="quote">
+            <summary>Source code in <code>aars/utils.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">111</span>
+<span class="normal">112</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record_generator</span><span class="p">:</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">record_generator</span> <span class="o">=</span> <span class="n">record_generator</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="aars.utils.PageableResponse.all" class="doc doc-heading">
+<code class="highlight language-python"><span class="nb">all</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Fetch all records of this response.</p>
+
+<details class="example">
+  <summary>Fetch all records</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">records</span> <span class="o">=</span> <span class="k">await</span> <span class="n">PageableResponse</span><span class="p">(</span><span class="n">record_generator</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</code></pre></div>
+</details>
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="typing.List">List</span>[<span title="aars.utils.T">T</span>]</code>
+          </td>
+          <td><p>A list of all records.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/utils.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetch all records of this response.</span>
+
+<span class="sd">    Example: Fetch all records</span>
+<span class="sd">        ```python</span>
+<span class="sd">        records = await PageableResponse(record_generator).all()</span>
+<span class="sd">        ```</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of all records.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">used</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">AlreadyUsedError</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">used</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">async_iterator_to_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">record_generator</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="aars.utils.PageableResponse.first" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">first</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Fetch the first record, which is usually the most recent record.</p>
+
+<details class="example">
+  <summary>Fetch the first record</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">record</span> <span class="o">=</span> <span class="k">await</span> <span class="n">PageableResponse</span><span class="p">(</span><span class="n">record_generator</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+</code></pre></div>
+</details>
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[<span title="aars.utils.T">T</span>]</code>
+          </td>
+          <td><p>The first record, or None if there are no records.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/utils.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">first</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetch the first record, which is usually the most recent record.</span>
+
+<span class="sd">    Example: Fetch the first record</span>
+<span class="sd">        ```python</span>
+<span class="sd">        record = await PageableResponse(record_generator).first()</span>
+<span class="sd">        ```</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        The first record, or None if there are no records.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">used</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">AlreadyUsedError</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">used</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">record_generator</span><span class="o">.</span><span class="fm">__anext__</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">StopAsyncIteration</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="aars.utils.PageableResponse.page" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">page</span><span class="p">(</span><span class="n">page</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Fetch a page of records.</p>
+
+<details class="example">
+  <summary>Fetch a page of records</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">records</span> <span class="o">=</span> <span class="k">await</span> <span class="n">PageableResponse</span><span class="p">(</span><span class="n">record_generator</span><span class="p">)</span><span class="o">.</span><span class="n">page</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+</code></pre></div>
+</details>
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>page</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>The page number to fetch.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>page_size</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>The number of records per page.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="typing.List">List</span>[<span title="aars.utils.T">T</span>]</code>
+          </td>
+          <td><p>A list of records on the specified page.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/utils.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetch a page of records.</span>
+
+<span class="sd">    Example: Fetch a page of records</span>
+<span class="sd">        ```python</span>
+<span class="sd">        records = await PageableResponse(record_generator).page(2, 10)</span>
+<span class="sd">        ```</span>
+<span class="sd">    Args:</span>
+<span class="sd">        page: The page number to fetch.</span>
+<span class="sd">        page_size: The number of records per page.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of records on the specified page.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">used</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">AlreadyUsedError</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">used</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">async_iterator_to_list</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">record_generator</span><span class="p">,</span> <span class="p">(</span><span class="n">page</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">page_size</span><span class="p">,</span> <span class="n">page_size</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.utils.async_iterator_to_list" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">async_iterator_to_list</span><span class="p">(</span><span class="n">iterator</span><span class="p">:</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">skip</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">count</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Return a list from an async iterator.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>iterator</code></td>
+          <td>
+                <code><span title="typing.AsyncIterator">AsyncIterator</span>[<span title="aars.utils.T">T</span>]</code>
+          </td>
+          <td><p>The async iterator to convert to a list.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>skip</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>The number of items to skip.</p></td>
+          <td>
+                <code>0</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>count</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[int]</code>
+          </td>
+          <td><p>The maximum number of items to return.</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="typing.List">List</span>[<span title="aars.utils.T">T</span>]</code>
+          </td>
+          <td><p>A list of items.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/utils.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">async_iterator_to_list</span><span class="p">(</span>
+    <span class="n">iterator</span><span class="p">:</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">skip</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">count</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a list from an async iterator.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        iterator: The async iterator to convert to a list.</span>
+<span class="sd">        skip: The number of items to skip.</span>
+<span class="sd">        count: The maximum number of items to return.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of items.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">skip</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">item</span> <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">skip</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">skip</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+
+            <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">==</span> <span class="n">count</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">items</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.utils.possible_index_names" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">possible_index_names</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span></code>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Return all possible index names for a sequence of properties.</p>
+
+<details class="example">
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="nb">list</span><span class="p">(</span><span class="n">possible_index_names</span><span class="p">([</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">]))</span> <span class="o">==</span> <span class="p">[[</span><span class="s1">&#39;A&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;A.B&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;A.B.C&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;B.C&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]]</span>
+</code></pre></div>
+</details>
+      <details class="quote">
+        <summary>Source code in <code>aars/utils.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">possible_index_names</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return all possible index names for a sequence of properties.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        ```python</span>
+<span class="sd">        list(possible_index_names([&#39;A&#39;, &#39;B&#39;, &#39;C&#39;])) == [[&#39;A&#39;], [&#39;A.B&#39;], [&#39;A.B.C&#39;], [&#39;B&#39;], [&#39;B.C&#39;], [&#39;C&#39;]]</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">,</span> <span class="n">subslices</span><span class="p">(</span><span class="n">seq</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.utils.subslices" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">subslices</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span></code>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Return all contiguous non-empty subslices of a sequence.
+Taken from more_itertools.</p>
+
+<details class="example">
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="nb">list</span><span class="p">(</span><span class="n">subslices</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]))</span> <span class="o">==</span> <span class="p">[[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
+</code></pre></div>
+</details>
+      <details class="quote">
+        <summary>Source code in <code>aars/utils.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">subslices</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return all contiguous non-empty subslices of a sequence.</span>
+<span class="sd">    Taken from more_itertools.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        ```python</span>
+<span class="sd">        list(subslices([1, 2, 3])) == [[1], [1, 2], [1, 2, 3], [2], [2, 3], [3]]</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#</span>
+    <span class="n">slices</span> <span class="o">=</span> <span class="n">starmap</span><span class="p">(</span><span class="nb">slice</span><span class="p">,</span> <span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">getitem</span><span class="p">,</span> <span class="n">repeat</span><span class="p">(</span><span class="n">seq</span><span class="p">),</span> <span class="n">slices</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.19047be9.min.js"></script>
+      
+    
+  </body>
+</html>

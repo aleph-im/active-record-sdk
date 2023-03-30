@@ -1,0 +1,2371 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../Index/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.4">
+    
+    
+      
+        <title>Record - Aleph Active Record SDK</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.240905d7.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#aars.core.Record" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Aleph Active Record SDK" class="md-header__button md-logo" aria-label="Aleph Active Record SDK" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Aleph Active Record SDK
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Record
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Aleph Active Record SDK" class="md-nav__button md-logo" aria-label="Aleph Active Record SDK" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Aleph Active Record SDK
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        AARS - Aleph Active Record SDK
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../FastAPI_Cookbook/" class="md-nav__link">
+        FastAPI Cookbook
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Code Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Code Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Exceptions/" class="md-nav__link">
+        Exceptions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../utils/" class="md-nav__link">
+        Utils
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+          Core
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_3_3">
+          <span class="md-nav__icon md-icon"></span>
+          Core
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../AARS/" class="md-nav__link">
+        AARS
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Index/" class="md-nav__link">
+        Index
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Record
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Record
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record" class="md-nav__link">
+    aars.core.Record
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.content" class="md-nav__link">
+    content
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.add_index" class="md-nav__link">
+    add_index()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.fetch" class="md-nav__link">
+    fetch()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.fetch_objects" class="md-nav__link">
+    fetch_objects()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.fetch_revision" class="md-nav__link">
+    fetch_revision()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.forget" class="md-nav__link">
+    forget()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.forget_all" class="md-nav__link">
+    forget_all()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.from_dict" class="md-nav__link">
+    from_dict()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.from_post" class="md-nav__link">
+    from_post()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.get_index" class="md-nav__link">
+    get_index()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.get_indices" class="md-nav__link">
+    get_indices()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.is_indexed" class="md-nav__link">
+    is_indexed()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.regenerate_indices" class="md-nav__link">
+    regenerate_indices()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.remove_index" class="md-nav__link">
+    remove_index()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.save" class="md-nav__link">
+    save()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.save_indices" class="md-nav__link">
+    save_indices()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.update_revision_hashes" class="md-nav__link">
+    update_revision_hashes()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.where_eq" class="md-nav__link">
+    where_eq()
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record" class="md-nav__link">
+    aars.core.Record
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.content" class="md-nav__link">
+    content
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.add_index" class="md-nav__link">
+    add_index()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.fetch" class="md-nav__link">
+    fetch()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.fetch_objects" class="md-nav__link">
+    fetch_objects()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.fetch_revision" class="md-nav__link">
+    fetch_revision()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.forget" class="md-nav__link">
+    forget()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.forget_all" class="md-nav__link">
+    forget_all()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.from_dict" class="md-nav__link">
+    from_dict()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.from_post" class="md-nav__link">
+    from_post()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.get_index" class="md-nav__link">
+    get_index()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.get_indices" class="md-nav__link">
+    get_indices()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.is_indexed" class="md-nav__link">
+    is_indexed()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.regenerate_indices" class="md-nav__link">
+    regenerate_indices()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.remove_index" class="md-nav__link">
+    remove_index()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.save" class="md-nav__link">
+    save()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.save_indices" class="md-nav__link">
+    save_indices()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.update_revision_hashes" class="md-nav__link">
+    update_revision_hashes()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aars.core.Record.where_eq" class="md-nav__link">
+    where_eq()
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  <h1>Record</h1>
+
+<div class="doc doc-object doc-class">
+
+
+<a id="aars.core.Record"></a>
+  <div class="doc doc-contents first">
+      <p class="doc doc-class-bases">
+        Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code>, <code><span title="abc.ABC">ABC</span></code></p>
+
+  
+      <p>A basic record which is persisted on Aleph decentralized storage.</p>
+<p>Records can be updated: revision numbers begin at 0 (original upload) and increment for each <code>.save()</code> call.</p>
+<p>Previous revisions can be restored by calling
+<div class="highlight"><pre><span></span><code><span class="k">await</span> <span class="n">record</span><span class="o">.</span><span class="n">fetch_revision</span><span class="p">(</span><span class="n">rev_no</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
+or
+<div class="highlight"><pre><span></span><code><span class="k">await</span> <span class="n">record</span><span class="o">.</span><span class="n">fetch_revision</span><span class="p">(</span><span class="n">rev_hash</span><span class="o">=</span><span class="s2">&quot;abc123&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+<p>They can also be forgotten: Aleph will ask the network to forget given item, in order to allow for <strong>GDPR-compliant</strong>
+applications.</p>
+<p>Records have an <code>indices</code> class attribute, which allows one to select an index and query it with a key.</p>
+<div class="admonition note">
+<p class="admonition-title">It uses <code>TypeVar("R", bound="Record")</code> to allow for type hinting of subclasses.</p>
+</div>
+
+
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="aars.core.Record.content" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]</code>
+          </td>
+          <td><p>A dictionary of the object&rsquo;s content, as it is to be stored on Aleph inside the <code>content</code> property of the POST message.</p></td>
+        </tr>
+    </tbody>
+  </table>
+  </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.add_index" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">add_index</span><span class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="n">Index</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Adds an index to the class. This allows the index to be used for queries and will be automatically updated
+when records are created or updated.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>index</code></td>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="aars.core.Index" href="../Index/#aars.core.Index">Index</a></code>
+          </td>
+          <td><p>The index to add.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">add_index</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">],</span> <span class="n">index</span><span class="p">:</span> <span class="s2">&quot;Index&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adds an index to the class. This allows the index to be used for queries and will be automatically updated</span>
+<span class="sd">    when records are created or updated.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        index: The index to add.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">cls</span><span class="o">.</span><span class="n">__indices</span><span class="p">[</span><span class="nb">repr</span><span class="p">(</span><span class="n">index</span><span class="p">)]</span> <span class="o">=</span> <span class="n">index</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.fetch" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">fetch</span><span class="p">(</span><span class="n">hashes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ItemHash</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ItemHash</span><span class="p">]]])</span> <span class="o">-&gt;</span> <span class="n">PageableResponse</span><span class="p">[</span><span class="n">R</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Fetches one or more objects of given type by its/their item_hash[es].</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>hashes</code></td>
+          <td>
+                <code><span title="typing.Union">Union</span>[<span title="typing.Union">Union</span>[str, <span title="aleph_message.models.ItemHash">ItemHash</span>], <span title="typing.List">List</span>[<span title="typing.Union">Union</span>[str, <span title="aleph_message.models.ItemHash">ItemHash</span>]]]</code>
+          </td>
+          <td><p>The item_hash[es] of the objects to fetch.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="aars.utils.PageableResponse" href="../../utils/#aars.utils.PageableResponse">PageableResponse</a>[<span title="aars.core.R">R</span>]</code>
+          </td>
+          <td><p>A pageable response object, which can be asynchronously iterated over.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span>
+    <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">],</span> <span class="n">hashes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ItemHash</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ItemHash</span><span class="p">]]]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PageableResponse</span><span class="p">[</span><span class="n">R</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetches one or more objects of given type by its/their item_hash[es].</span>
+<span class="sd">    Args:</span>
+<span class="sd">        hashes: The item_hash[es] of the objects to fetch.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A pageable response object, which can be asynchronously iterated over.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hashes</span><span class="p">,</span> <span class="n">List</span><span class="p">):</span>
+        <span class="n">hashes</span> <span class="o">=</span> <span class="p">[</span><span class="n">hashes</span><span class="p">]</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">AARS</span><span class="o">.</span><span class="n">fetch_records</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">hashes</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">PageableResponse</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.fetch_objects" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">fetch_objects</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">PageableRequest</span><span class="p">[</span><span class="n">R</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Fetches all objects of given type.</p>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="aars.utils.PageableRequest" href="../../utils/#aars.utils.PageableRequest">PageableRequest</a>[<span title="aars.core.R">R</span>]</code>
+          </td>
+          <td><p>A pageable request object, which can be asynchronously iterated over.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">fetch_objects</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">PageableRequest</span><span class="p">[</span><span class="n">R</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetches all objects of given type.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A pageable request object, which can be asynchronously iterated over.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">PageableRequest</span><span class="p">(</span><span class="n">AARS</span><span class="o">.</span><span class="n">fetch_records</span><span class="p">,</span> <span class="n">record_type</span><span class="o">=</span><span class="bp">cls</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.fetch_revision" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">fetch_revision</span><span class="p">(</span><span class="n">rev_no</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rev_hash</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Fetches a Record&rsquo;s revision by its revision number (0 =&gt; original record) or revision hash.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>rev_no</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[int]</code>
+          </td>
+          <td><p>The revision number of the revision to fetch. Negative numbers are allowed and count from the end.</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>rev_hash</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[str]</code>
+          </td>
+          <td><p>The hash of the revision to fetch.</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="aars.core.R">R</span></code>
+          </td>
+          <td><p>The object with the given revision.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">fetch_revision</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span> <span class="n">rev_no</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rev_hash</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetches a Record&#39;s revision by its revision number (0 =&gt; original record) or revision hash.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rev_no: The revision number of the revision to fetch. Negative numbers are allowed and count from the end.</span>
+<span class="sd">        rev_hash: The hash of the revision to fetch.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The object with the given revision.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_hash</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">NotStoredError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rev_no</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">rev_no</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">rev_no</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">revision_hashes</span><span class="p">)</span> <span class="o">+</span> <span class="n">rev_no</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_revision</span> <span class="o">==</span> <span class="n">rev_no</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">elif</span> <span class="n">rev_no</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">revision_hashes</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No revision no. </span><span class="si">{</span><span class="n">rev_no</span><span class="si">}</span><span class="s2"> found for </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_revision</span> <span class="o">=</span> <span class="n">rev_no</span>
+    <span class="k">elif</span> <span class="n">rev_hash</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rev_item_hash</span> <span class="o">=</span> <span class="n">ItemHash</span><span class="p">(</span><span class="n">rev_hash</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_revision</span> <span class="ow">and</span> <span class="n">rev_hash</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">revision_hashes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">current_revision</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_revision</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">revision_hashes</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">rev_item_hash</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rev_hash</span><span class="si">}</span><span class="s2"> is not a revision of </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either rev or hash must be provided&quot;</span><span class="p">)</span>
+
+    <span class="n">resp</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AARS</span><span class="o">.</span><span class="n">fetch_exact</span><span class="p">(</span>
+        <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">revision_hashes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">current_revision</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">timestamp</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">signer</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">signer</span>
+
+    <span class="k">return</span> <span class="bp">self</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.forget" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">forget</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">R</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Orders Aleph to forget a specific object with all its revisions. Will remove the object from all indices.
+The content of all POST messages will be deleted, but the hashes and timestamps will remain.</p>
+<div class="admonition note">
+<p class="admonition-title">The forgotten object should be deleted afterwards, as it is useless now.</p>
+</div>
+
+  <p><strong>Raises:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="aars.exceptions.NotStoredError" href="../../Exceptions/#aars.exceptions.NotStoredError">NotStoredError</a></code>
+          </td>
+          <td><p>If the object is not stored on Aleph.</p></td>
+        </tr>
+        <tr>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="aars.exceptions.AlephPermissionError" href="../../Exceptions/#aars.exceptions.AlephPermissionError">AlephPermissionError</a></code>
+          </td>
+          <td><p>If the object is not owned by the current account.</p></td>
+        </tr>
+        <tr>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="aars.exceptions.AlreadyForgottenError" href="../../Exceptions/#aars.exceptions.AlreadyForgottenError">AlreadyForgottenError</a></code>
+          </td>
+          <td><p>If the object was already forgotten.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">forget</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">R</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Orders Aleph to forget a specific object with all its revisions. Will remove the object from all indices.</span>
+<span class="sd">    The content of all POST messages will be deleted, but the hashes and timestamps will remain.</span>
+<span class="sd">    !!! note &quot;The forgotten object should be deleted afterwards, as it is useless now.&quot;</span>
+<span class="sd">    Raises:</span>
+<span class="sd">        NotStoredError: If the object is not stored on Aleph.</span>
+<span class="sd">        AlephPermissionError: If the object is not owned by the current account.</span>
+<span class="sd">        AlreadyForgottenError: If the object was already forgotten.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">forgotten</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_hash</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotStoredError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">signer</span> <span class="o">!=</span> <span class="n">AARS</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">get_address</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">AlephPermissionError</span><span class="p">(</span><span class="n">AARS</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">get_address</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_hash</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signer</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">AARS</span><span class="o">.</span><span class="n">forget_objects</span><span class="p">([</span><span class="bp">self</span><span class="p">])</span>
+        <span class="p">[</span><span class="n">index</span><span class="o">.</span><span class="n">remove_record</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_indices</span><span class="p">()]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forgotten</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">AlreadyForgottenError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.forget_all" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">forget_all</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ItemHash</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Forgets all Records of given type of the authorized user. If invoked on Record, will try to fetch all objects
+of the current channel and forget them.</p>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="typing.List">List</span>[<span title="aleph_message.models.ItemHash">ItemHash</span>]</code>
+          </td>
+          <td><p>A list of all item hashes that were forgotten.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">forget_all</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ItemHash</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Forgets all Records of given type of the authorized user. If invoked on Record, will try to fetch all objects</span>
+<span class="sd">    of the current channel and forget them.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of all item hashes that were forgotten.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">fetch_objects</span><span class="p">()</span>
+
+    <span class="n">item_hashes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">record_batch</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">signer</span> <span class="o">!=</span> <span class="n">AARS</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">get_address</span><span class="p">():</span>
+            <span class="k">continue</span>
+        <span class="n">record_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">50</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">item_hashes</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">record</span><span class="o">.</span><span class="n">id_hash</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">record_batch</span><span class="p">])</span>
+            <span class="k">await</span> <span class="n">AARS</span><span class="o">.</span><span class="n">forget_objects</span><span class="p">(</span><span class="n">record_batch</span><span class="p">)</span>
+            <span class="n">record_batch</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">record_batch</span><span class="p">:</span>
+        <span class="n">item_hashes</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">record</span><span class="o">.</span><span class="n">id_hash</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">record_batch</span><span class="p">])</span>
+        <span class="k">await</span> <span class="n">AARS</span><span class="o">.</span><span class="n">forget_objects</span><span class="p">(</span><span class="n">record_batch</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">item_hashes</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.from_dict" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">from_dict</span><span class="p">(</span><span class="n">post</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">R</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Initializes a record object from its raw Aleph data.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>post</code></td>
+          <td>
+                <code><span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]</code>
+          </td>
+          <td><p>The raw Aleph data to initialize from.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="aars.core.R">R</span></code>
+          </td>
+          <td><p>The initialized object.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">],</span> <span class="n">post</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initializes a record object from its raw Aleph data.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        post: The raw Aleph data to initialize from.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        The initialized object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">post</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">post</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ref&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">id_hash</span> <span class="o">=</span> <span class="n">ItemHash</span><span class="p">(</span><span class="n">post</span><span class="p">[</span><span class="s2">&quot;item_hash&quot;</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">id_hash</span> <span class="o">=</span> <span class="n">ItemHash</span><span class="p">(</span><span class="n">post</span><span class="p">[</span><span class="s2">&quot;ref&quot;</span><span class="p">])</span>
+    <span class="k">await</span> <span class="n">obj</span><span class="o">.</span><span class="n">update_revision_hashes</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">obj</span><span class="o">.</span><span class="n">id_hash</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">current_revision</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">revision_hashes</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">id_hash</span><span class="p">)</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="n">post</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">signer</span> <span class="o">=</span> <span class="n">post</span><span class="p">[</span><span class="s2">&quot;sender&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">obj</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.from_post" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">from_post</span><span class="p">(</span><span class="n">post</span><span class="p">:</span> <span class="n">PostMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Initializes a record object from its PostMessage.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>post</code></td>
+          <td>
+                <code><span title="aleph_message.models.PostMessage">PostMessage</span></code>
+          </td>
+          <td><p>The PostMessage to initialize from.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="aars.core.R">R</span></code>
+          </td>
+          <td><p>The initialized object.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">from_post</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">],</span> <span class="n">post</span><span class="p">:</span> <span class="n">PostMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initializes a record object from its PostMessage.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        post: The PostMessage to initialize from.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        The initialized object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">R</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">post</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">post</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">id_hash</span> <span class="o">=</span> <span class="n">post</span><span class="o">.</span><span class="n">item_hash</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">post</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">ref</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">id_hash</span> <span class="o">=</span> <span class="n">ItemHash</span><span class="p">(</span><span class="n">post</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">ref</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">post</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">ref</span><span class="p">,</span> <span class="n">ChainRef</span><span class="p">):</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">id_hash</span> <span class="o">=</span> <span class="n">post</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">item_hash</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown type of ref: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">post</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">ref</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">obj</span><span class="o">.</span><span class="n">update_revision_hashes</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">obj</span><span class="o">.</span><span class="n">id_hash</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">current_revision</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">revision_hashes</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">id_hash</span><span class="p">)</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="n">post</span><span class="o">.</span><span class="n">time</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">signer</span> <span class="o">=</span> <span class="n">post</span><span class="o">.</span><span class="n">sender</span>
+    <span class="k">return</span> <span class="n">obj</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.get_index" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">get_index</span><span class="p">(</span><span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Index</span><span class="p">[</span><span class="n">R</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Returns an index or any of its subindices by its name. The name is defined as
+<code>"&lt;object_class&gt;.[&lt;object_properties&gt;.]"</code> with the properties being sorted alphabetically. For example,
+<code>"Book.author.title"</code> is a valid index name, while <code>"Book.title.author"</code> is not.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>index_name</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td><p>The name of the index to fetch.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>Index[R]</code>
+          </td>
+          <td><p>The index instance or a subindex.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">get_index</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">],</span> <span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Index[R]&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns an index or any of its subindices by its name. The name is defined as</span>
+<span class="sd">    `&quot;&lt;object_class&gt;.[&lt;object_properties&gt;.]&quot;` with the properties being sorted alphabetically. For example,</span>
+<span class="sd">    `&quot;Book.author.title&quot;` is a valid index name, while `&quot;Book.title.author&quot;` is not.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        index_name: The name of the index to fetch.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        The index instance or a subindex.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__indices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">index_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">key_subslices</span> <span class="o">=</span> <span class="n">subslices</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">index_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]))</span>
+        <span class="c1"># returns all plausible combinations of keys</span>
+        <span class="n">key_subslices</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">key_subslices</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">keys</span> <span class="ow">in</span> <span class="n">key_subslices</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__indices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No index </span><span class="si">{</span><span class="n">index_name</span><span class="si">}</span><span class="s2"> found. Using </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> instead.&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__indices</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No index or subindex for </span><span class="si">{</span><span class="n">index_name</span><span class="si">}</span><span class="s2"> found.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">index</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.get_indices" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">get_indices</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Index</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Returns all indices of a given Record subclass.</p>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="aars.core.Index" href="../Index/#aars.core.Index">Index</a>]</code>
+          </td>
+          <td><p>A list of existing indices.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">get_indices</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Index&quot;</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns all indices of a given Record subclass.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of existing indices.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">cls</span> <span class="o">==</span> <span class="n">Record</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__indices</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">index</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__indices</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">index</span><span class="o">.</span><span class="n">record_type</span> <span class="o">==</span> <span class="bp">cls</span><span class="p">]</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.is_indexed" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">is_indexed</span><span class="p">(</span><span class="n">id_hash</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ItemHash</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Checks if a given object is indexed.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>id_hash</code></td>
+          <td>
+                <code><span title="typing.Union">Union</span>[<span title="aleph_message.models.ItemHash">ItemHash</span>, str]</code>
+          </td>
+          <td><p>The hash of the object to check.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>bool</code>
+          </td>
+          <td><p>True if the object is indexed, False otherwise.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">is_indexed</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">],</span> <span class="n">id_hash</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ItemHash</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if a given object is indexed.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        id_hash: The hash of the object to check.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        True if the object is indexed, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">id_hash</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__indexed_items</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.regenerate_indices" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">regenerate_indices</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">R</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Regenerates all indices of given Record subtype.
+If invoked on Record, will try to fetch all objects of the current channel and index them.</p>
+<div class="admonition warning">
+<p class="admonition-title">This can take quite some time, depending on the amount of records to be fetched.</p>
+</div>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="typing.List">List</span>[<span title="aars.core.R">R</span>]</code>
+          </td>
+          <td><p>A list of all records that were indexed.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">regenerate_indices</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">R</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Regenerates all indices of given Record subtype.</span>
+<span class="sd">    If invoked on Record, will try to fetch all objects of the current channel and index them.</span>
+
+<span class="sd">    !!! warning &quot;This can take quite some time, depending on the amount of records to be fetched.&quot;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of all records that were indexed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">fetch_objects</span><span class="p">()</span>
+
+    <span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+        <span class="n">record</span><span class="o">.</span><span class="n">_index</span><span class="p">()</span>
+        <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">records</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.remove_index" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">remove_index</span><span class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="n">Index</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Removes an index from the class. This stops the index from being used for queries or updates.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>index</code></td>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="aars.core.Index" href="../Index/#aars.core.Index">Index</a></code>
+          </td>
+          <td><p>The index to remove.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">remove_index</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">],</span> <span class="n">index</span><span class="p">:</span> <span class="s2">&quot;Index&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Removes an index from the class. This stops the index from being used for queries or updates.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        index: The index to remove.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">del</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__indices</span><span class="p">[</span><span class="nb">repr</span><span class="p">(</span><span class="n">index</span><span class="p">)]</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.save" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">save</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">R</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Posts a new item to Aleph or amends it, if it was already posted. Will add new items to local indices.
+For indices to be persisted on Aleph, you need to call <code>save()</code> on the index itself or <code>cls.save_indices()</code>.</p>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="aars.core.R">R</span></code>
+          </td>
+          <td><p>The updated object itself.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">R</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Posts a new item to Aleph or amends it, if it was already posted. Will add new items to local indices.</span>
+<span class="sd">    For indices to be persisted on Aleph, you need to call `save()` on the index itself or `cls.save_indices()`.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        The updated object itself.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">await</span> <span class="n">AARS</span><span class="o">.</span><span class="n">post_or_amend_object</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_revision</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">()</span>
+    <span class="k">return</span> <span class="bp">self</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.save_indices" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">save_indices</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Updates all indices of given Record subclass.</p>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">save_indices</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Updates all indices of given Record subclass.&quot;&quot;&quot;</span>
+    <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">index</span><span class="o">.</span><span class="n">save</span><span class="p">()</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_indices</span><span class="p">()]</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.update_revision_hashes" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">update_revision_hashes</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">R</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Updates the list of available revision hashes, in order to fetch these.</p>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="aars.core.R">R</span></code>
+          </td>
+          <td><p>The object with the updated revision hashes.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">update_revision_hashes</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">R</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Updates the list of available revision hashes, in order to fetch these.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The object with the updated revision hashes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_hash</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">revision_hashes</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id_hash</span><span class="p">]</span> <span class="o">+</span> <span class="k">await</span> <span class="n">async_iterator_to_list</span><span class="p">(</span>
+        <span class="n">AARS</span><span class="o">.</span><span class="n">fetch_revisions</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">ref</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id_hash</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_revision</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># latest revision</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_revision</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">revision_hashes</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="bp">self</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="aars.core.Record.where_eq" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">where_eq</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PageableResponse</span><span class="p">[</span><span class="n">R</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Queries an object by given properties through an index, in order to fetch applicable records.
+An index name is defined as
+<div class="highlight"><pre><span></span><code><span class="s2">&quot;Class.property1.property2&quot;</span>
+</code></pre></div>
+and is initialized by creating an <code>Index</code> instance, targeting a BaseRecord class with a list of properties.</p>
+<div class="highlight"><pre><span></span><code><span class="n">Index</span><span class="p">(</span><span class="n">MyRecord</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;property1&#39;</span><span class="p">,</span> <span class="s1">&#39;property2&#39;</span><span class="p">])</span>
+</code></pre></div>
+<p>This will create an index named &lsquo;MyRecord.property1.property2&rsquo; which can be queried with:</p>
+<div class="highlight"><pre><span></span><code><span class="n">MyRecord</span><span class="o">.</span><span class="n">where_eq</span><span class="p">(</span><span class="n">property1</span><span class="o">=</span><span class="s1">&#39;value1&#39;</span><span class="p">,</span> <span class="n">property2</span><span class="o">=</span><span class="s1">&#39;value2&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>If no index is defined for the given properties, an IndexError is raised.</p>
+<p>If only a part of the keys is indexed for the given query, a fallback index is used and locally filtered.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>**kwargs</code></td>
+          <td>
+          </td>
+          <td><p>The properties to query for.</p></td>
+          <td>
+                <code>{}</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="aars.utils.PageableResponse" href="../../utils/#aars.utils.PageableResponse">PageableResponse</a>[<span title="aars.core.R">R</span>]</code>
+          </td>
+          <td><p>A pageable response object, which can be asynchronously iterated over.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>aars/core.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">where_eq</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">R</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PageableResponse</span><span class="p">[</span><span class="n">R</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Queries an object by given properties through an index, in order to fetch applicable records.</span>
+<span class="sd">    An index name is defined as</span>
+<span class="sd">    ```python</span>
+<span class="sd">    &quot;Class.property1.property2&quot;</span>
+<span class="sd">    ```</span>
+<span class="sd">    and is initialized by creating an `Index` instance, targeting a BaseRecord class with a list of properties.</span>
+
+<span class="sd">    ```python</span>
+<span class="sd">    Index(MyRecord, [&#39;property1&#39;, &#39;property2&#39;])</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    This will create an index named &#39;MyRecord.property1.property2&#39; which can be queried with:</span>
+
+<span class="sd">    ```python</span>
+<span class="sd">    MyRecord.where_eq(property1=&#39;value1&#39;, property2=&#39;value2&#39;)</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    If no index is defined for the given properties, an IndexError is raised.</span>
+
+<span class="sd">    If only a part of the keys is indexed for the given query, a fallback index is used and locally filtered.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        **kwargs: The properties to query for.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A pageable response object, which can be asynchronously iterated over.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">IndexQuery</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">get_index_name</span><span class="p">())</span>
+    <span class="n">generator</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">PageableResponse</span><span class="p">(</span><span class="n">generator</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.19047be9.min.js"></script>
+      
+    
+  </body>
+</html>

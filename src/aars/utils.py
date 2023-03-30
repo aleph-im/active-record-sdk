@@ -286,6 +286,12 @@ async def async_iterator_to_list(
 ) -> List[T]:
     """
     Return a list from an async iterator.
+    Args:
+        iterator: The async iterator to convert to a list.
+        skip: The number of items to skip.
+        count: The maximum number of items to return.
+    Returns:
+        A list of items.
     """
     if count is None and skip == 0:
         return [item async for item in iterator]

@@ -540,14 +540,11 @@
 <h2 id="getting-started">Getting Started</h2>
 <p>To get started with AARS, you will need to define your data schema by creating classes that inherit from Record. These classes represent the objects you want to store and query on the Aleph network.</p>
 <p>Here&rsquo;s an example of how you can implement a simple social media platform, that we&rsquo;ll call &ldquo;Chirper&rdquo;:</p>
-<p><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">src.aars</span> <span class="kn">import</span> <span class="n">Record</span><span class="p">,</span> <span class="n">Index</span><span class="p">,</span> <span class="n">AARS</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
-
+<p><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">src.aars</span> <span class="kn">import</span> <span class="n">Record</span>
 
 <span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Record</span><span class="p">):</span>
     <span class="n">username</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">bio</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">bio</span><span class="p">:</span> <span class="nb">str</span>
 
 <span class="k">class</span> <span class="nc">Chirp</span><span class="p">(</span><span class="n">Record</span><span class="p">):</span>
     <span class="n">author</span><span class="p">:</span> <span class="n">User</span>
@@ -556,12 +553,22 @@
     <span class="n">timestamp</span><span class="p">:</span> <span class="nb">int</span>
 </code></pre></div>
 In this example, we have a User class representing a user of Chirper, and a Chirp class representing a user&rsquo;s message. Now, let&rsquo;s create some indices to make querying our data more efficient:</p>
-<p><div class="highlight"><pre><span></span><code><span class="n">Index</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="s1">&#39;username&#39;</span><span class="p">)</span>
+<p><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">src.aars</span> <span class="kn">import</span> <span class="n">Index</span>
+
+<span class="n">Index</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="s1">&#39;username&#39;</span><span class="p">)</span>
 <span class="n">Index</span><span class="p">(</span><span class="n">Chirp</span><span class="p">,</span> <span class="s1">&#39;author&#39;</span><span class="p">)</span>
 <span class="n">Index</span><span class="p">(</span><span class="n">Chirp</span><span class="p">,</span> <span class="s1">&#39;timestamp&#39;</span><span class="p">)</span>
 </code></pre></div>
-With the schema defined and indices created, we can now perform various operations, such as creating new records, querying records, and updating records:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Create a new user</span>
+With the schema defined and indices created, we only need to initialize an AARS session:</p>
+<p><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">src.aars</span> <span class="kn">import</span> <span class="n">AARS</span>
+
+<span class="n">AARS</span><span class="p">()</span>
+</code></pre></div>
+It is enough to call the constructor once, and it will automatically initialize the session with the default settings.</p>
+<p>We can now perform various operations, such as creating new records, querying records, and updating records:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">time</span>
+
+<span class="c1"># Create a new user</span>
 <span class="n">new_user</span> <span class="o">=</span> <span class="k">await</span> <span class="n">User</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s1">&#39;chirpy_user&#39;</span><span class="p">,</span> <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;Chirpy User&#39;</span><span class="p">,</span> <span class="n">bio</span><span class="o">=</span><span class="s1">&#39;I love chirping!&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 
 <span class="c1"># Create a new chirp</span>

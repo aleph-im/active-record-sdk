@@ -22,14 +22,11 @@ To get started with AARS, you will need to define your data schema by creating c
 Here's an example of how you can implement a simple social media platform, that we'll call "Chirper":
 
 ```python
-from src.aars import Record, Index, AARS
-from typing import List
-
+from src.aars import Record
 
 class User(Record):
     username: str
-    display_name: str
-    bio: Optional[str]
+    bio: str
 
 class Chirp(Record):
     author: User
@@ -40,13 +37,26 @@ class Chirp(Record):
 In this example, we have a User class representing a user of Chirper, and a Chirp class representing a user's message. Now, let's create some indices to make querying our data more efficient:
 
 ```python
+from src.aars import Index
+
 Index(User, 'username')
 Index(Chirp, 'author')
 Index(Chirp, 'timestamp')
 ```
-With the schema defined and indices created, we can now perform various operations, such as creating new records, querying records, and updating records:
+With the schema defined and indices created, we only need to initialize an AARS session:
+    
+```python
+from src.aars import AARS
+
+AARS()
+```
+It is enough to call the constructor once, and it will automatically initialize the session with the default settings.
+
+We can now perform various operations, such as creating new records, querying records, and updating records:
 
 ```python
+import time
+
 # Create a new user
 new_user = await User(username='chirpy_user', display_name='Chirpy User', bio='I love chirping!').save()
 

@@ -33,6 +33,7 @@ class EmptyAsyncIterator(AsyncIterator[T]):
     """
     An async iterator that can be returned when there are no results.
     """
+
     async def __anext__(self) -> T:
         raise StopAsyncIteration
 
@@ -43,6 +44,7 @@ class IndexQuery(OrderedDict, Generic[T]):
     It is an ordered dict in which the order is alphabetically determined by the keys, so that the same query
     will always have the same string representation. This is used to determine the index name.
     """
+
     record_type: Type[T]
 
     def __init__(self, record_type: Type[T], **kwargs):

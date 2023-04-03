@@ -18,16 +18,13 @@ plugins:
           parser:
             type: python
             options:
+              sort: attr,name
               show_root_heading: false
               selection:
                 members:
                   - public
-              extraction:
-                docstrings: true
-                signatures: true
-                inheritance: true
-          rendering:
-            show_source: true
-            show_signature_annotations: true
-            merge_init_into_class: true
-            autodoc: true
+                  - protected
+              show_source: true
+              show_signature_annotations: true
+              merge_init_into_class: true
+              autodoc: true

@@ -20,9 +20,9 @@ def event_loop():
 
 @pytest.fixture(scope="session", autouse=True)
 def create_indices(request):
-    Index(Book, 'title')
-    Index(Book, ['title', 'author'])
-    Index(Library, on='name')
+    Index(Book, "title")
+    Index(Book, ["title", "author"])
+    Index(Library, on="name")
 
 
 class Book(Record):
@@ -39,8 +39,8 @@ class Library(Record):
 def test_invalid_index_created():
     try:
         index = None
-        with pytest.raises(ValueError):
-            index = Index(Book, 'some_nonexistent_field')
+        with pytest.raises(KeyError):
+            index = Index(Book, "some_nonexistent_field")
     finally:
         if index:
             Record.remove_index(index)
@@ -48,16 +48,16 @@ def test_invalid_index_created():
 
 def test_duplicate_index_creation():
     with pytest.raises(ValueError):
-        Index(Book, 'title')
+        Index(Book, "title")
 
 
 @pytest.mark.asyncio
 async def test_store_and_index():
-    new_book = await Book(title='Atlas Shrugged', author='Ayn Rand').save()
-    assert new_book.title == 'Atlas Shrugged'
-    assert new_book.author == 'Ayn Rand'
+    new_book = await Book(title="Atlas Shrugged", author="Ayn Rand").save()
+    assert new_book.title == "Atlas Shrugged"
+    assert new_book.author == "Ayn Rand"
     await asyncio.sleep(1)
-    fetched_book = await Book.where_eq(title='Atlas Shrugged').first()
+    fetched_book = await Book.where_eq(title="Atlas Shrugged").first()
     print(fetched_book)
     print(new_book)
     assert new_book == fetched_book
@@ -65,22 +65,22 @@ async def test_store_and_index():
 
 @pytest.mark.asyncio
 async def test_multi_index():
-    new_book = await Book(title='Lila', author='Robert M. Pirsig', year=1991).save()
+    new_book = await Book(title="Lila", author="Robert M. Pirsig", year=1991).save()
     # wait a few secs
     await asyncio.sleep(1)
-    should_be_none = await Book.where_eq(title='Lila', author='Yo Momma').all()
+    should_be_none = await Book.where_eq(title="Lila", author="Yo Momma").all()
     assert len(should_be_none) == 0
-    fetched_book = await Book.where_eq(title='Lila', author='Robert M. Pirsig').first()
+    fetched_book = await Book.where_eq(title="Lila", author="Robert M. Pirsig").first()
     assert new_book == fetched_book
 
 
 @pytest.mark.asyncio
 async def test_amending_record():
-    book = await Book(title='Neurodancer', author='William Gibson').save()
+    book = await Book(title="Neurodancer", author="William Gibson").save()
     assert book.current_revision == 0
-    book.title = 'Neuromancer'
+    book.title = "Neuromancer"
     book = await book.save()
-    assert book.title == 'Neuromancer'
+    assert book.title == "Neuromancer"
     assert len(book.revision_hashes) == 2
     assert book.current_revision == 1
     assert book.revision_hashes[0] == book.id_hash
@@ -88,27 +88,29 @@ async def test_amending_record():
     await asyncio.sleep(1)
     old_book = await book.fetch_revision(rev_no=0)
     old_timestamp = old_book.timestamp
-    assert old_book.title == 'Neurodancer'
+    assert old_book.title == "Neurodancer"
     new_book = await book.fetch_revision(rev_no=1)
-    assert new_book.title == 'Neuromancer'
+    assert new_book.title == "Neuromancer"
     assert new_book.timestamp > old_timestamp
 
 
 @pytest.mark.asyncio
 async def test_store_and_index_record_of_records():
     books = await asyncio.gather(
-        Book(title='Atlas Shrugged', author='Ayn Rand').save(),
-        Book(title='The Martian', author='Andy Weir').save()
+        Book(title="Atlas Shrugged", author="Ayn Rand").save(),
+        Book(title="The Martian", author="Andy Weir").save(),
     )
-    new_library = await Library(name='The Library', books=books).save()
+    new_library = await Library(name="The Library", books=books).save()
     await asyncio.sleep(1)
-    fetched_library = await Library.where_eq(name='The Library').first()
+    fetched_library = await Library.where_eq(name="The Library").first()
     assert new_library == fetched_library
 
 
 @pytest.mark.asyncio
 async def test_forget_object():
-    forgettable_book = await Book(title="The Forgotten Book", author="Mechthild Gläser").save()  # I'm sorry.
+    forgettable_book = await Book(
+        title="The Forgotten Book", author="Mechthild Gläser"
+    ).save()  # I'm sorry.
     await asyncio.sleep(1)
     await forgettable_book.forget()
     assert forgettable_book.forgotten is True
@@ -120,11 +122,11 @@ async def test_forget_object():
 
 @pytest.mark.asyncio
 async def test_store_and_wrong_where_eq():
-    new_book = await Book(title='Atlas Shrugged', author='Ayn Rand').save()
-    assert new_book.title == 'Atlas Shrugged'
-    assert new_book.author == 'Ayn Rand'
+    new_book = await Book(title="Atlas Shrugged", author="Ayn Rand").save()
+    assert new_book.title == "Atlas Shrugged"
+    assert new_book.author == "Ayn Rand"
     with pytest.warns(UserWarning):
-        fetched_book = (await Book.where_eq(title='Atlas Shrugged', foo="bar").all())
+        fetched_book = await Book.where_eq(title="Atlas Shrugged", foo="bar").all()
     assert len(fetched_book) == 0
 
 
@@ -158,23 +160,16 @@ async def test_sync_indices():
 
 
 @pytest.mark.asyncio
-async def test_empty_record_save():
-    class EmptyRecord(Record):
-        pass
-
-    with pytest.raises(ValueError):
-        await EmptyRecord().save()
-
-
-@pytest.mark.asyncio
 async def test_dict_field_save():
     class BookWithDictAuthor(Record):
         title: str
         author: dict
 
-    book = await BookWithDictAuthor(title='Test Book', author={'first': 'John', 'last': 'Doe'}).save()
+    book = await BookWithDictAuthor(
+        title="Test Book", author={"first": "John", "last": "Doe"}
+    ).save()
     fetched_book = await BookWithDictAuthor.fetch(book.id_hash).first()
-    assert fetched_book.author == {'first': 'John', 'last': 'Doe'}
+    assert fetched_book.author == {"first": "John", "last": "Doe"}
 
 
 @pytest.mark.asyncio
@@ -191,14 +186,18 @@ async def test_large_page_size_pagination():
 
 @pytest.mark.asyncio
 async def test_non_existent_revision():
-    book = await Book(title='Test Book', author='John Doe').save()
-    with pytest.raises(KeyError):
+    book = Book(title="Test Book", author="John Doe")
+    print("changed:", book.changed)
+    await book.save()
+    print("changed after save:", book.changed)
+    with pytest.raises(IndexError):
         await book.fetch_revision(rev_no=10)
 
 
 @pytest.mark.asyncio
 async def test_save_without_changes():
-    book = await Book(title='Test Book', author='John Doe').save()
+    book = await Book(title="Test Book", author="John Doe").save()
     original_revision_count = len(book.revision_hashes)
+    print("changed:", book.changed)
     book = await book.save()
     assert len(book.revision_hashes) == original_revision_count

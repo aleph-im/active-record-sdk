@@ -31,7 +31,7 @@ from typing import (
 )
 
 from aiohttp import ServerDisconnectedError
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from aleph.sdk.client import AuthenticatedAlephClient
 from aleph.sdk.types import Account
@@ -76,14 +76,48 @@ class Record(BaseModel, ABC):
     !!! note "It uses `TypeVar("R", bound="Record")` to allow for type hinting of subclasses."
     """
 
-    forgotten: bool = False
-    id_hash: Optional[Union[ItemHash, str]] = None
-    current_revision: Optional[int] = None
-    revision_hashes: List[ItemHash] = []
-    timestamp: Optional[float] = None
-    signer: Optional[str] = None
+    class Config:
+        validate_assignment = True
+
+    forgotten: bool = Field(
+        default=False,
+        alias="forgotten",
+        description="Whether the record has been forgotten on Aleph",
+    )
+    id_hash: Optional[Union[ItemHash, str]] = Field(
+        default=None, alias="id_hash", description="The hash of the record's ID"
+    )
+    current_revision: Optional[int] = Field(
+        default=0,
+        alias="current_revision",
+        description="The current revision number of the record",
+    )
+    revision_hashes: List[ItemHash] = Field(
+        default_factory=list,
+        alias="revision_hashes",
+        description="A list of hashes of all revisions of the record",
+    )
+    timestamp: Optional[float] = Field(
+        default=None,
+        alias="timestamp",
+        description="The timestamp of the record's creation",
+    )
+    signer: Optional[str] = Field(
+        default=None,
+        alias="signer",
+        description="The address of the signer of the saved record",
+    )
+    changed: bool = Field(
+        default=False,
+        alias="changed",
+        description="Whether the record has been changed since the last save",
+    )
+
     __indexed_items: ClassVar[Set[str]] = set()
     __indices: ClassVar[Dict[str, "Index"]] = {}
+
+    def __init__(self, **data: Any):
+        super().__init__(**data)
 
     def __repr__(self):
         return f"{type(self).__name__}({self.id_hash})"
@@ -99,8 +133,14 @@ class Record(BaseModel, ABC):
             and self.forgotten == other.forgotten
             and self.content == other.content
             and self.signer == other.signer
+            and self.changed == other.changed
             # do not compare timestamps, they can deviate on Aleph between commitment and finalization
         )
+
+    def __setattr__(self, key, value):
+        if self.changed is False and key != "changed" and self.id_hash is not None:
+            self.changed = True
+        return super().__setattr__(key, value)
 
     @property
     def content(self) -> Dict[str, Any]:
@@ -116,6 +156,7 @@ class Record(BaseModel, ABC):
                 "forgotten",
                 "timestamp",
                 "signer",
+                "changed",
             }
         )
 
@@ -162,7 +203,10 @@ class Record(BaseModel, ABC):
                 self.current_revision = rev_no
         elif rev_hash is not None:
             rev_item_hash = ItemHash(rev_hash)
-            if self.current_revision and rev_hash == self.revision_hashes[self.current_revision]:
+            if (
+                self.current_revision
+                and rev_hash == self.revision_hashes[self.current_revision]
+            ):
                 return self
             try:
                 self.current_revision = self.revision_hashes.index(rev_item_hash)
@@ -177,6 +221,7 @@ class Record(BaseModel, ABC):
         self.__dict__.update(resp.content)
         self.timestamp = resp.timestamp
         self.signer = resp.signer
+        self.changed = False
 
         return self
 
@@ -187,9 +232,14 @@ class Record(BaseModel, ABC):
         Returns:
             The updated object itself.
         """
+        if not self.changed and self.id_hash is not None:
+            return self
+        if self.forgotten:
+            raise AlreadyForgottenError(self)
         await AARS.post_or_amend_object(self)
         if self.current_revision == 0:
             self._index()
+        self.changed = False
         return self
 
     def _index(self):
@@ -228,7 +278,9 @@ class Record(BaseModel, ABC):
             if self.id_hash is None:
                 raise NotStoredError(self)
             if self.signer != AARS.account.get_address():
-                raise AlephPermissionError(AARS.account.get_address(), self.id_hash, self.signer)
+                raise AlephPermissionError(
+                    AARS.account.get_address(), self.id_hash, self.signer
+                )
             await AARS.forget_objects([self])
             [index.remove_record(self) for index in self.get_indices()]
             self.forgotten = True
@@ -493,8 +545,13 @@ class Index(Record, Generic[R]):
         # check if all properties exist
         for prop in on:
             if prop not in record_type.__fields__:
-                raise ValueError(f"Property {prop} does not exist on {record_type.__name__}")
+                raise KeyError(
+                    f"Property {prop} does not exist on {record_type.__name__}"
+                )
         super(Index, self).__init__(record_type=record_type, index_on=sorted(on))
+        # check if index already exists
+        if repr(self) in [repr(index) for index in Record.get_indices()]:
+            raise ValueError(f"Index {self} already exists.")
         record_type.add_index(self)
 
     def __str__(self):
@@ -589,6 +646,7 @@ class AARS:
     The AARS class is the main entry point for the Aleph Active Record SDK.
     It provides versatile methods to create, update, delete and query records.
     """
+
     account: Account
     channel: str
     api_url: str
@@ -655,7 +713,11 @@ class AARS:
             channel = cls.channel
         assert isinstance(obj, Record)
         post_type = type(obj).__name__ if obj.id_hash is None else "amend"
-        if obj.id_hash is not None and obj.signer is not None and obj.signer != cls.account.get_address():
+        if (
+            obj.id_hash is not None
+            and obj.signer is not None
+            and obj.signer != cls.account.get_address()
+        ):
             raise AlephPermissionError(
                 cls.account.get_address(), obj.id_hash, obj.signer
             )
@@ -730,7 +792,10 @@ class AARS:
         Returns:
             An iterator over the found records.
         """
-        assert issubclass(record_type, Record)
+        if page < 1 or page_size < 1:
+            raise ValueError("page and page_size must be positive and non-zero.")
+        if not issubclass(record_type, Record):
+            raise ValueError("record_type must be a subclass of Record.")
         channels = None if channel is None else [channel]
         owners = None if owner is None else [owner]
         if item_hashes is None and channels is None and owners is None:
@@ -740,9 +805,10 @@ class AARS:
             # TODO: Add some kind of caching for channels and owners or add recent item_hashes endpoint to the Aleph API
             records = await cls._fetch_records_from_cache(record_type, item_hashes)
             cached_ids = []
-            for r in records:
-                cached_ids.append(r.id_hash)
-                yield r
+            for record in records:
+                cached_ids.append(record.id_hash)
+                record.changed = False
+                yield record
             item_hashes = [h for h in item_hashes if h not in cached_ids]
             if len(item_hashes) == 0:
                 return
@@ -755,6 +821,7 @@ class AARS:
             page_size=page_size,
             page=page,
         ):
+            record.changed = False
             yield record
 
     @classmethod

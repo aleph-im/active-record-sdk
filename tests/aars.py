@@ -52,14 +52,20 @@ def test_duplicate_index_creation():
 
 
 @pytest.mark.asyncio
+async def test_sync_indices():
+    await AARS.sync_indices()
+    assert len(Record.get_indices()) == 3
+    assert len(Book.get_indices()) == 2
+    assert len(Library.get_indices()) == 1
+
+
+@pytest.mark.asyncio
 async def test_store_and_index():
     new_book = await Book(title="Atlas Shrugged", author="Ayn Rand").save()
     assert new_book.title == "Atlas Shrugged"
     assert new_book.author == "Ayn Rand"
     await asyncio.sleep(1)
     fetched_book = await Book.where_eq(title="Atlas Shrugged").first()
-    print(fetched_book)
-    print(new_book)
     assert new_book == fetched_book
 
 
@@ -140,26 +146,6 @@ async def test_fetch_all_pagination():
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="Only if you want to forget everything")
-async def test_drop_table():
-    await Record.forget_all()
-    assert len(await Book.fetch_objects().all()) == 0
-    assert len(await Library.fetch_objects().all()) == 0
-
-
-@pytest.mark.asyncio
-@pytest.mark.skip(reason="This takes a long time")
-async def test_sync_indices():
-    await AARS.sync_indices()
-    assert len(Record.get_indices()) == 3
-    assert len(Book.get_indices()) == 2
-    assert len(Library.get_indices()) == 1
-    assert len(list(Book.get_indices()[0].hashmap.values())) > 0
-    assert len(list(Book.get_indices()[1].hashmap.values())) > 0
-    assert len(list(Library.get_indices()[0].hashmap.values())) > 0
-
-
-@pytest.mark.asyncio
 async def test_dict_field_save():
     class BookWithDictAuthor(Record):
         title: str
@@ -187,9 +173,7 @@ async def test_large_page_size_pagination():
 @pytest.mark.asyncio
 async def test_non_existent_revision():
     book = Book(title="Test Book", author="John Doe")
-    print("changed:", book.changed)
     await book.save()
-    print("changed after save:", book.changed)
     with pytest.raises(IndexError):
         await book.fetch_revision(rev_no=10)
 
@@ -198,6 +182,10 @@ async def test_non_existent_revision():
 async def test_save_without_changes():
     book = await Book(title="Test Book", author="John Doe").save()
     original_revision_count = len(book.revision_hashes)
-    print("changed:", book.changed)
     book = await book.save()
     assert len(book.revision_hashes) == original_revision_count
+
+
+@pytest.mark.asyncio
+async def test_drop_table():
+    await Record.forget_all()

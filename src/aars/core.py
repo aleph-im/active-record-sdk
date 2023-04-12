@@ -674,7 +674,7 @@ class AARS:
             retry_count: The number of times to retry a failed request. Defaults to 3.
         """
         AARS.account = account if account else get_fallback_account()
-        AARS.channel = channel if channel else "AARS_TEST"
+        AARS.channel = channel if channel else "AARS_TEST_v0.5.6"
         AARS.api_url = api_url if api_url else settings.API_HOST
         AARS.session = (
             session
@@ -778,7 +778,7 @@ class AARS:
         channel: Optional[str] = None,
         owner: Optional[str] = None,
         page_size: int = 50,
-        page: int = 1,
+        page: Optional[int] = 1,
     ) -> AsyncIterator[R]:
         """
         Retrieves posts as objects by its aleph item_hash.
@@ -788,11 +788,11 @@ class AARS:
             channel: Channel in which to look for it.
             owner: Account that owns the object.
             page_size: Number of items to fetch per page.
-            page: Page number to fetch, based on page_size.
+            page: Page number to fetch, based on page_size. If None, will fetch all pages.
         Returns:
             An iterator over the found records.
         """
-        if page < 1 or page_size < 1:
+        if (page and page < 1) or page_size < 1:
             raise ValueError("page and page_size must be positive and non-zero.")
         if not issubclass(record_type, Record):
             raise ValueError("record_type must be a subclass of Record.")
@@ -809,6 +809,7 @@ class AARS:
                 cached_ids.append(record.id_hash)
                 record.changed = False
                 yield record
+            # Remove the cached ids from the list of item_hashes to fetch from the API
             item_hashes = [h for h in item_hashes if h not in cached_ids]
             if len(item_hashes) == 0:
                 return
@@ -845,15 +846,28 @@ class AARS:
         owners: Optional[List[str]] = None,
         refs: Optional[List[str]] = None,
         page_size: int = 50,
-        page: int = 1,
+        page: Optional[int] = 1,
     ) -> AsyncIterator[R]:
+        """
+        Retrieves posts as objects by its aleph item_hash.
+        Args:
+            record_type: The type of the objects to retrieve.
+            item_hashes: Aleph item_hashes of the objects to fetch.
+            channels: Channels in which to look for it.
+            owners: Accounts that own the object.
+            refs: References to the object.
+            page_size: Number of items to fetch per page.
+            page: If None, will fetch all pages.
+        Returns:
+            An iterator over the found records.
+        """
         aleph_resp = None
         retries = cls.retry_count
         if item_hashes is not None:
             item_hashes = [str(h) for h in item_hashes]
         while aleph_resp is None:
             try:
-                actual_page = page if page != -1 else 1
+                actual_page = page if page else 1
                 aleph_resp = await cls.session.get_posts(
                     hashes=item_hashes,
                     channels=channels,
@@ -870,7 +884,7 @@ class AARS:
         for post in aleph_resp["posts"]:
             yield await record_type.from_dict(post)
 
-        if page == -1:
+        if page is None:
             # Get all pages
             total_items = aleph_resp["pagination_total"]
             per_page = aleph_resp["pagination_per_page"]

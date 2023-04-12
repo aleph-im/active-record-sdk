@@ -217,8 +217,9 @@ class PageableRequest(AsyncIterator[T], Generic[T]):
         The [PageableResponse][aars.utils.PageableResponse] of this request.
         """
         if self._response is None:
+            # Trigger the request to get all records
             self._response = PageableResponse(
-                self.func(*self.args, **self.kwargs, page=-1, page_size=20)
+                self.func(*self.args, **self.kwargs, page=None, page_size=50)
             )
         return self._response
 

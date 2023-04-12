@@ -801,6 +801,8 @@ class AARS:
         if item_hashes is None and channels is None and owners is None:
             channels = [cls.channel]
 
+        returned_records = 0
+
         if cls.cache and item_hashes is not None:
             # TODO: Add some kind of caching for channels and owners or add recent item_hashes endpoint to the Aleph API
             records = await cls._fetch_records_from_cache(record_type, item_hashes)
@@ -809,10 +811,22 @@ class AARS:
                 cached_ids.append(record.id_hash)
                 record.changed = False
                 yield record
+                if page:
+                    # If we are fetching a specific page, we need to track the number of records returned
+                    # as the cache does not know about the pagination
+                    returned_records += 1
+                    if returned_records >= page_size:
+                        return
             # Remove the cached ids from the list of item_hashes to fetch from the API
             item_hashes = [h for h in item_hashes if h not in cached_ids]
             if len(item_hashes) == 0:
                 return
+
+        if returned_records:
+            # If we got some records from the cache, we fetch a reduced number of item_hashes from the API
+            # This messes with the pagination, so we need to drop all assumptions about the page number to be fetched
+            # and track the number of records returned instead
+            page = None
 
         async for record in cls._fetch_records_from_api(
             record_type=record_type,
@@ -824,6 +838,11 @@ class AARS:
         ):
             record.changed = False
             yield record
+            if returned_records:
+                # Only triggers if we are fetching a specific page
+                returned_records += 1
+                if returned_records >= page_size:
+                    return
 
     @classmethod
     async def _fetch_records_from_cache(
@@ -867,6 +886,7 @@ class AARS:
             item_hashes = [str(h) for h in item_hashes]
         while aleph_resp is None:
             try:
+                # If we want to fetch all pages, we need to fetch the first page to get the total number of items
                 actual_page = page if page else 1
                 aleph_resp = await cls.session.get_posts(
                     hashes=item_hashes,
@@ -878,14 +898,16 @@ class AARS:
                     page=actual_page,
                 )
             except ServerDisconnectedError:
+                # Retry if the connection was interrupted
                 retries -= 1
                 if retries == 0:
                     raise
+
         for post in aleph_resp["posts"]:
             yield await record_type.from_dict(post)
 
         if page is None:
-            # Get all pages
+            # Get all pages iteratively if page is not specified
             total_items = aleph_resp["pagination_total"]
             per_page = aleph_resp["pagination_per_page"]
             if total_items > per_page:

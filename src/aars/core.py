@@ -968,6 +968,11 @@ class AARS:
             # If there are more pages, fetch them
             total_items = aleph_resp.pagination_total
             per_page = aleph_resp.pagination_per_page
+            # log the total number of items and pages
+            logger.debug(
+                f"Found {total_items} items in {channel or 'all channels'}"
+            )
+            logger.debug(f"Fetching {math.ceil(total_items / per_page)} pages")
             if total_items > per_page:
                 for next_page in range(2, math.ceil(total_items / per_page) + 1):
                     async for item_hash in cls.fetch_revisions(

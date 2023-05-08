@@ -84,8 +84,8 @@ class Record(BaseModel, ABC):
         alias="forgotten",
         description="Whether the record has been forgotten on Aleph",
     )
-    id_hash: Optional[Union[ItemHash, str]] = Field(
-        default=None, alias="id_hash", description="The hash of the record's ID"
+    item_hash: Optional[Union[ItemHash, str]] = Field(
+        default=None, alias="item_hash", description="The hash of the record's ID"
     )
     current_revision: Optional[int] = Field(
         default=0,
@@ -120,25 +120,25 @@ class Record(BaseModel, ABC):
         super().__init__(**data)
 
     def __repr__(self):
-        return f"{type(self).__name__}({self.id_hash})"
+        return f"{type(self).__name__}({self.item_hash})"
 
     def __str__(self):
         return f"{type(self).__name__} {self.__dict__}"
 
     def __eq__(self, other):
         return (
-            str(self.id_hash) == str(other.id_hash)
-            and self.current_revision == other.current_revision
-            and self.revision_hashes == other.revision_hashes
-            and self.forgotten == other.forgotten
-            and self.content == other.content
-            and self.signer == other.signer
-            and self.changed == other.changed
+                str(self.item_hash) == str(other.item_hash)
+                and self.current_revision == other.current_revision
+                and self.revision_hashes == other.revision_hashes
+                and self.forgotten == other.forgotten
+                and self.content == other.content
+                and self.signer == other.signer
+                and self.changed == other.changed
             # do not compare timestamps, they can deviate on Aleph between commitment and finalization
         )
 
     def __setattr__(self, key, value):
-        if self.changed is False and key != "changed" and self.id_hash is not None:
+        if self.changed is False and key != "changed" and self.item_hash is not None:
             self.changed = True
         return super().__setattr__(key, value)
 
@@ -150,7 +150,7 @@ class Record(BaseModel, ABC):
         """
         return self.dict(
             exclude={
-                "id_hash",
+                "item_hash",
                 "current_revision",
                 "revision_hashes",
                 "forgotten",
@@ -167,9 +167,9 @@ class Record(BaseModel, ABC):
         Returns:
             The object with the updated revision hashes.
         """
-        assert self.id_hash is not None
-        self.revision_hashes = [self.id_hash] + await async_iterator_to_list(
-            AARS.fetch_revisions(type(self), ref=self.id_hash)
+        assert self.item_hash is not None
+        self.revision_hashes = [self.item_hash] + await async_iterator_to_list(
+            AARS.fetch_revisions(type(self), ref=self.item_hash)
         )
         if self.current_revision is None:
             # latest revision
@@ -189,7 +189,7 @@ class Record(BaseModel, ABC):
         Returns:
             The object with the given revision.
         """
-        if self.id_hash is None:
+        if self.item_hash is None:
             raise NotStoredError(self)
 
         if rev_no is not None:
@@ -232,7 +232,7 @@ class Record(BaseModel, ABC):
         Returns:
             The updated object itself.
         """
-        if not self.changed and self.id_hash is not None:
+        if not self.changed and self.item_hash is not None:
             return self
         if self.forgotten:
             raise AlreadyForgottenError(self)
@@ -250,18 +250,18 @@ class Record(BaseModel, ABC):
         """
         for index in self.get_indices():
             index.add_record(self)
-        self.__indexed_items.add(self.id_hash)
+        self.__indexed_items.add(self.item_hash)
 
     @classmethod
-    def is_indexed(cls: Type[R], id_hash: Union[ItemHash, str]) -> bool:
+    def is_indexed(cls: Type[R], item_hash: Union[ItemHash, str]) -> bool:
         """
         Checks if a given object is indexed.
         Args:
-            id_hash: The hash of the object to check.
+            item_hash: The hash of the object to check.
         Returns:
             True if the object is indexed, False otherwise.
         """
-        return id_hash in cls.__indexed_items
+        return item_hash in cls.__indexed_items
 
     async def forget(self: R) -> R:
         """
@@ -275,11 +275,11 @@ class Record(BaseModel, ABC):
         """
 
         if not self.forgotten:
-            if self.id_hash is None:
+            if self.item_hash is None:
                 raise NotStoredError(self)
             if self.signer != AARS.account.get_address():
                 raise AlephPermissionError(
-                    AARS.account.get_address(), self.id_hash, self.signer
+                    AARS.account.get_address(), self.item_hash, self.signer
                 )
             await AARS.forget_objects([self])
             [index.remove_record(self) for index in self.get_indices()]
@@ -299,17 +299,17 @@ class Record(BaseModel, ABC):
         """
         obj: R = cls(**post.content.content)
         if post.content.ref is None:
-            obj.id_hash = post.item_hash
+            obj.item_hash = post.item_hash
         else:
             if isinstance(post.content.ref, str):
-                obj.id_hash = ItemHash(post.content.ref)
+                obj.item_hash = ItemHash(post.content.ref)
             elif isinstance(post.content.ref, ChainRef):
-                obj.id_hash = post.content.ref.item_hash
+                obj.item_hash = post.content.ref.item_hash
             else:
                 raise TypeError(f"Unknown type of ref: {type(post.content.ref)}")
         await obj.update_revision_hashes()
-        assert obj.id_hash is not None
-        obj.current_revision = obj.revision_hashes.index(obj.id_hash)
+        assert obj.item_hash is not None
+        obj.current_revision = obj.revision_hashes.index(obj.item_hash)
         obj.timestamp = post.time
         obj.signer = post.sender
         return obj
@@ -325,12 +325,12 @@ class Record(BaseModel, ABC):
         """
         obj = cls(**post["content"])
         if post.get("ref") is None:
-            obj.id_hash = ItemHash(post["item_hash"])
+            obj.item_hash = ItemHash(post["item_hash"])
         else:
-            obj.id_hash = ItemHash(post["ref"])
+            obj.item_hash = ItemHash(post["ref"])
         await obj.update_revision_hashes()
-        assert obj.id_hash is not None
-        obj.current_revision = obj.revision_hashes.index(obj.id_hash)
+        assert obj.item_hash is not None
+        obj.current_revision = obj.revision_hashes.index(obj.item_hash)
         obj.timestamp = post["time"]
         obj.signer = post["sender"]
         return obj
@@ -505,11 +505,11 @@ class Record(BaseModel, ABC):
             record_batch.append(record)
             i += 1
             if i % 50 == 0:
-                item_hashes.extend([record.id_hash for record in record_batch])
+                item_hashes.extend([record.item_hash for record in record_batch])
                 await AARS.forget_objects(record_batch)
                 record_batch = []
         if record_batch:
-            item_hashes.extend([record.id_hash for record in record_batch])
+            item_hashes.extend([record.item_hash for record in record_batch])
             await AARS.forget_objects(record_batch)
 
         return item_hashes
@@ -582,7 +582,7 @@ class Index(Record, Generic[R]):
             needs filtering.
         """
         assert query.record_type == self.record_type
-        id_hashes: Set[str] = set()
+        item_hashes: Set[str] = set()
         needs_filtering = False
 
         subquery = query
@@ -593,12 +593,12 @@ class Index(Record, Generic[R]):
         queries = list(subquery.get_unfolded_queries())
 
         for q in queries:
-            id_hashes.update(self.hashmap.get(tuple(q.values()), set()))
+            item_hashes.update(self.hashmap.get(tuple(q.values()), set()))
 
-        if not id_hashes:
+        if not item_hashes:
             return set(), False
 
-        return id_hashes, needs_filtering
+        return item_hashes, needs_filtering
 
     def lookup_and_fetch(self, query: IndexQuery) -> AsyncIterator[R]:
         """
@@ -619,12 +619,12 @@ class Index(Record, Generic[R]):
         Returns:
             An async iterator over the records.
         """
-        id_hashes, needs_filtering = self.lookup(query)
+        item_hashes, needs_filtering = self.lookup(query)
 
-        if not id_hashes:
+        if not item_hashes:
             return EmptyAsyncIterator()
 
-        items = AARS.fetch_records(self.record_type, list(id_hashes))
+        items = AARS.fetch_records(self.record_type, list(item_hashes))
 
         if needs_filtering:
             return self._filter_index_items(items, query)
@@ -642,7 +642,7 @@ class Index(Record, Generic[R]):
     def add_record(self, obj: R):
         """Adds a record to the index."""
         assert issubclass(type(obj), Record)
-        assert obj.id_hash is not None
+        assert obj.item_hash is not None
         key = attrgetter(*self.index_on)(obj)
         if isinstance(key, str):
             key = (key,)
@@ -650,16 +650,16 @@ class Index(Record, Generic[R]):
             key = tuple(key)
         if key not in self.hashmap:
             self.hashmap[key] = set()
-        self.hashmap[key].add(obj.id_hash)
+        self.hashmap[key].add(obj.item_hash)
 
     def remove_record(self, obj: R):
         """Removes a record from the index, i.e. when it is forgotten."""
-        assert obj.id_hash is not None
+        assert obj.item_hash is not None
         key = attrgetter(*self.index_on)(obj)
         if isinstance(key, str):
             key = (key,)
         if key in self.hashmap:
-            self.hashmap[key].remove(obj.id_hash)
+            self.hashmap[key].remove(obj.item_hash)
 
     def regenerate(self, items: List[R]):
         """Regenerates the index with given items."""
@@ -739,23 +739,23 @@ class AARS:
         if channel is None:
             channel = cls.channel
         assert isinstance(obj, Record)
-        post_type = type(obj).__name__ if obj.id_hash is None else "amend"
+        post_type = type(obj).__name__ if obj.item_hash is None else "amend"
         if (
-            obj.id_hash is not None
+            obj.item_hash is not None
             and obj.signer is not None
             and obj.signer != cls.account.get_address()
         ):
             raise AlephPermissionError(
-                cls.account.get_address(), obj.id_hash, obj.signer
+                cls.account.get_address(), obj.item_hash, obj.signer
             )
         message, status = await cls.session.create_post(
             post_content=obj.content,
             post_type=post_type,
             channel=channel,
-            ref=obj.id_hash,
+            ref=obj.item_hash,
         )
-        if obj.id_hash is None:
-            obj.id_hash = message.item_hash
+        if obj.item_hash is None:
+            obj.item_hash = message.item_hash
         obj.revision_hashes.append(message.item_hash)
         obj.current_revision = len(obj.revision_hashes) - 1
         obj.timestamp = message.time
@@ -780,13 +780,13 @@ class AARS:
             channel = cls.channel
         hashes = []
         for obj in objs:
-            if obj.id_hash is None:
+            if obj.item_hash is None:
                 raise ValueError("Cannot forget an object that has not been posted.")
             if obj.signer != cls.account.get_address():
                 raise AlephPermissionError(
-                    obj.signer, obj.id_hash, cls.account.get_address()
+                    obj.signer, obj.item_hash, cls.account.get_address()
                 )
-            hashes += [obj.id_hash] + obj.revision_hashes
+            hashes += [obj.item_hash] + obj.revision_hashes
         forget_task = cls.session.forget(
             hashes=hashes,
             reason=None,
@@ -835,7 +835,7 @@ class AARS:
             records = await cls._fetch_records_from_cache(record_type, item_hashes)
             cached_ids = []
             for record in records:
-                cached_ids.append(record.id_hash)
+                cached_ids.append(record.item_hash)
                 record.changed = False
                 yield record
                 if page:

@@ -52,7 +52,7 @@ class AlreadyForgottenError(AlephError):
         message="Object '{0}' has already been forgotten. It is recommended to delete the "
         "called object locally.",
     ):
-        self.item_hash = content.id_hash
+        self.item_hash = content.item_hash
         self.message = f"{message.format(self.item_hash)}"
         super().__init__(self.message)
 

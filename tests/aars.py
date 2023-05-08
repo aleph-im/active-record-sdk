@@ -101,8 +101,8 @@ async def test_amending_record():
     assert book.title == "Neuromancer"
     assert len(book.revision_hashes) == 2
     assert book.current_revision == 1
-    assert book.revision_hashes[0] == book.id_hash
-    assert book.revision_hashes[1] != book.id_hash
+    assert book.revision_hashes[0] == book.item_hash
+    assert book.revision_hashes[1] != book.item_hash
     await asyncio.sleep(1)
     old_book = await book.fetch_revision(rev_no=0)
     old_timestamp = old_book.timestamp
@@ -133,7 +133,7 @@ async def test_forget_object():
     await forgettable_book.forget()
     assert forgettable_book.forgotten is True
     await asyncio.sleep(1)
-    assert len(await Book.fetch(forgettable_book.id_hash).all()) == 0
+    assert len(await Book.fetch(forgettable_book.item_hash).all()) == 0
     with pytest.raises(AlreadyForgottenError):
         await forgettable_book.forget()
 
@@ -166,7 +166,7 @@ async def test_dict_field_save():
         title="Test Book", author={"first": "John", "last": "Doe"}
     ).save()
     await asyncio.sleep(1)
-    fetched_book = await BookWithDictAuthor.fetch(book.id_hash).first()
+    fetched_book = await BookWithDictAuthor.fetch(book.item_hash).first()
     assert fetched_book.author == {"first": "John", "last": "Doe"}
 
 

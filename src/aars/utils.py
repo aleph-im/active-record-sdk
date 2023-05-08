@@ -9,6 +9,7 @@ easy pagination of queries and efficient retrieval of large amounts of data
 in the asynchronous environment of AARS.
 """
 import operator
+from enum import Enum
 from itertools import *
 from typing import (
     AsyncIterator,
@@ -21,12 +22,21 @@ from typing import (
     Awaitable,
     Callable,
     Tuple,
-    Dict,
+    Dict, Iterator,
 )
 
 from .exceptions import AlreadyUsedError
 
 T = TypeVar("T")
+
+
+class Comparator(Enum):
+    """
+    An enum for the different comparison operators.
+    """
+
+    EQ = operator.eq
+    IN = operator.contains
 
 
 class EmptyAsyncIterator(AsyncIterator[T]):
@@ -46,17 +56,36 @@ class IndexQuery(OrderedDict, Generic[T]):
     """
 
     record_type: Type[T]
+    comparators: Dict[str, Comparator]
 
     def __init__(self, record_type: Type[T], **kwargs):
         """
         Create a new IndexQuery.
+        Queries fields can use comparison suffixes to specify the type of comparison to use, like this:
+        ```python
+        IndexQuery(record_type=MyRecord, a__lt=1, b__in=[1, 2, 3])
+        ```
+        This would query for all records of type MyRecord where the field `a` is less than 1 and the field `b` is
+        contained in the list [1, 2, 3].
+
         Args:
             record_type: The type of record that this query is for.
             **kwargs: The keys and values to query for.
         """
-        super().__init__(
-            {item[0]: item[1] for item in sorted(kwargs.items()) if item[1] is not None}
-        )
+        # check if all kwargs are valid
+        self.comparators = {}
+        values = {}
+        for item in sorted(kwargs.items()):
+            if "__" in item[0]:
+                key, comparator = item[0].split("__")
+                self.comparators[key] = Comparator[comparator.upper()]
+            else:
+                key = item[0]
+                self.comparators[key] = Comparator.EQ
+            if key not in record_type.__annotations__:
+                raise KeyError(f"Invalid key '{key}' for record type {record_type.__name__}")
+            values[key] = item[1]
+        super().__init__(values)
         self.record_type = record_type
 
     def get_index_name(self) -> str:
@@ -82,8 +111,29 @@ class IndexQuery(OrderedDict, Generic[T]):
             The subquery.
         """
         return IndexQuery(
-            self.record_type, **{key: arg for key, arg in self.items() if key in keys}
+            self.record_type, **{key + "__" + self.comparators[key].name: arg for key, arg in self.items() if key in keys}
         )
+
+    def get_unfolded_queries(self) -> Iterator["IndexQuery"]:
+        """
+        Get all combinations of queries that arise from the IN comparators.
+        Example:
+            ```python
+            query = IndexQuery(record_type=MyRecord, a__in=[1, 2], b__in=[3, 4])
+            assert query.get_unfolded_queries() == [
+                IndexQuery(record_type=MyRecord, a=1, b=3),
+                IndexQuery(record_type=MyRecord, a=1, b=4),
+                IndexQuery(record_type=MyRecord, a=2, b=3),
+                IndexQuery(record_type=MyRecord, a=2, b=4),
+            ]
+            ```
+        """
+        for key, comparator in self.comparators.items():
+            if comparator == Comparator.IN:
+                for value in self[key]:
+                    yield from IndexQuery(self.record_type, **{key: value}).get_unfolded_queries()
+            else:
+                yield self
 
 
 class PageableResponse(AsyncIterator[T], Generic[T]):

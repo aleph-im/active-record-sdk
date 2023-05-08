@@ -24,7 +24,6 @@ plugins:
                 members:
                   - public
                   - protected
-              show_source: true
               show_signature_annotations: true
               merge_init_into_class: true
               autodoc: true

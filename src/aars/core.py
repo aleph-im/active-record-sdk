@@ -362,37 +362,49 @@ class Record(BaseModel, ABC):
         return PageableRequest(AARS.fetch_records, record_type=cls)
 
     @classmethod
-    def where_eq(cls: Type[R], **kwargs) -> PageableResponse[R]:
+    def filter(cls: Type[R], **kwargs) -> PageableResponse[R]:
         """
         Queries an object by given properties through an index, in order to fetch applicable records.
-        An index name is defined as
-        ```python
-        "Class.property1.property2"
-        ```
-        and is initialized by creating an `Index` instance, targeting a BaseRecord class with a list of properties.
 
-        ```python
-        Index(MyRecord, ['property1', 'property2'])
-        ```
+        Example: What is an index?
+            An index name is defined as
+            ```python
+            "Class.property1.property2"
+            ```
+            and is initialized by creating an `Index` instance, targeting a BaseRecord class with a list of properties.
 
-        This will create an index named 'MyRecord.property1.property2' which can be queried with:
+            ```python
+            Index(MyRecord, ['property1', 'property2'])
+            ```
 
-        ```python
-        MyRecord.where_eq(property1='value1', property2='value2')
-        ```
+            This will create an index named 'MyRecord.property1.property2' which can be queried with:
 
-        If no index is defined for the given properties, an IndexError is raised.
+            ```python
+            MyRecord.filter(property1='value1', property2='value2')
+            ```
 
-        If only a part of the keys is indexed for the given query, a fallback index is used and locally filtered.
+        Similar to the Django ORM, it allows the `__in` operator to query for multiple values of a property.
+
+        Example: Querying for multiple values
+            ```python
+            MyRecord.filter(property1__in=['value1', 'value2'])
+            ```
+            This will return all records where `property1` is either `'value1'` or `'value2'`.
+
+        Note: Fallback indexes
+            If only a part of the keys is indexed for the given query, a fallback index is used and locally filtered.
 
         Args:
             **kwargs: The properties to query for.
         Returns:
             A pageable response object, which can be asynchronously iterated over.
+        Raises:
+            IndexError: If no index is defined for the given properties.
+            KeyError: If a given property does not exist.
         """
         query = IndexQuery(cls, **kwargs)
         index = cls.get_index(query.get_index_name())
-        generator = index.lookup(query)
+        generator = index.lookup_and_fetch(query)
         return PageableResponse(generator)
 
     @classmethod
@@ -509,12 +521,12 @@ class Index(Record, Generic[R]):
     It is used internally by the Record class and once created, is automatically updated when records are created or
     updated.
 
-    It is not recommended using the Index class directly, but rather through the `where_eq` method of the `Record`
+    It is not recommended using the Index class directly, but rather through the `filter` method of the `Record`
     class.
 
     Example:
         ```python
-        MyRecord.where_eq(foo='bar')
+        MyRecord.filter(foo='bar')
         ```
         If `MyRecord` has an index on the property `foo`, this will return all records of type `MyRecord` where `foo` is
         equal to `'bar'`.
@@ -560,7 +572,35 @@ class Index(Record, Generic[R]):
     def __repr__(self):
         return f"{self.record_type.__name__}.{'.'.join(self.index_on)}"
 
-    def lookup(self, query: IndexQuery) -> AsyncIterator[R]:
+    def lookup(self, query: IndexQuery) -> Tuple[Set[str], bool]:
+        """
+        Retrieves the item_hashes of all records that match the given query, without fetching the records themselves.
+        Args:
+            query: The query to execute.
+        Returns:
+            A tuple of the item_hashes of all records that match the query and a boolean indicating whether the query
+            needs filtering.
+        """
+        assert query.record_type == self.record_type
+        id_hashes: Set[str] = set()
+        needs_filtering = False
+
+        subquery = query
+        if repr(self) != query.get_index_name():
+            subquery = query.get_subquery(self.index_on)
+            needs_filtering = True
+
+        queries = list(subquery.get_unfolded_queries())
+
+        for q in queries:
+            id_hashes.update(self.hashmap.get(tuple(q.values()), set()))
+
+        if not id_hashes:
+            return set(), False
+
+        return id_hashes, needs_filtering
+
+    def lookup_and_fetch(self, query: IndexQuery) -> AsyncIterator[R]:
         """
         Fetches records with given values for the indexed properties.
 
@@ -571,7 +611,7 @@ class Index(Record, Generic[R]):
             index.lookup(index_query)
             ```
             Returns all records of type `MyRecord` where `foo` is equal to `'bar'`.
-            This is an anti-pattern, as the `IndexQuery` should be created by calling `MyRecord.where_eq(foo='bar')`
+            This is an anti-pattern, as the `IndexQuery` should be created by calling `MyRecord.filter(foo='bar')`
             instead.
 
         Args:
@@ -579,17 +619,9 @@ class Index(Record, Generic[R]):
         Returns:
             An async iterator over the records.
         """
-        assert query.record_type == self.record_type
-        id_hashes: Optional[Set[str]]
-        needs_filtering = False
+        id_hashes, needs_filtering = self.lookup(query)
 
-        subquery = query
-        if repr(self) != query.get_index_name():
-            subquery = query.get_subquery(self.index_on)
-            needs_filtering = True
-        id_hashes = self.hashmap.get(tuple(subquery.values()))
-
-        if id_hashes is None:
+        if not id_hashes:
             return EmptyAsyncIterator()
 
         items = AARS.fetch_records(self.record_type, list(id_hashes))
@@ -602,14 +634,9 @@ class Index(Record, Generic[R]):
     async def _filter_index_items(
         cls, items: AsyncIterator[R], query: IndexQuery
     ) -> AsyncIterator[R]:
-        sorted_keys = query.keys()
         async for item in items:
-            # eliminate the item which does not fulfill the properties
-            class_properties = vars(item)
-            required_class_properties = {
-                key: class_properties.get(key) for key in sorted_keys
-            }
-            if required_class_properties == dict(query):
+            class_properties = item.content
+            if all(query.comparators[key].value(value, class_properties[key]) for key, value in query.items()):
                 yield item
 
     def add_record(self, obj: R):

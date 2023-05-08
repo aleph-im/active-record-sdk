@@ -64,7 +64,7 @@ new_user = await User(username='chirpy_user', display_name='Chirpy User', bio='I
 new_chirp = await Chirp(author=new_user, content='Hello, Chirper!', likes=0, timestamp=int(time.time())).save()
 
 # Query chirps by author
-chirps_by_author = await Chirp.where_eq(author=new_user).all()
+chirps_by_author = await Chirp.filter(author=new_user).all()
 
 # Update a chirp
 new_chirp.likes += 1

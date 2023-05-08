@@ -65,7 +65,7 @@ async def test_store_and_index():
     assert new_book.title == "Atlas Shrugged"
     assert new_book.author == "Ayn Rand"
     await asyncio.sleep(1)
-    fetched_book = await Book.where_eq(title="Atlas Shrugged").first()
+    fetched_book = await Book.filter(title="Atlas Shrugged").first()
     assert new_book == fetched_book
 
 
@@ -74,10 +74,22 @@ async def test_multi_index():
     new_book = await Book(title="Lila", author="Robert M. Pirsig", year=1991).save()
     # wait a few secs
     await asyncio.sleep(1)
-    should_be_none = await Book.where_eq(title="Lila", author="Yo Momma").all()
+    should_be_none = await Book.filter(title="Lila", author="Yo Momma").all()
     assert len(should_be_none) == 0
-    fetched_book = await Book.where_eq(title="Lila", author="Robert M. Pirsig").first()
+    fetched_book = await Book.filter(title="Lila", author="Robert M. Pirsig").first()
     assert new_book == fetched_book
+
+
+@pytest.mark.asyncio
+async def test_in_query():
+    books = await asyncio.gather(
+        Book(title="Siddhartha", author="Hermann Hesse", year=1922).save(),
+        Book(title="Fahrenheit 451", author="Ray Bradbury", year=1953).save(),
+    )
+    await asyncio.sleep(1)
+    fetched_books = await Book.filter(title__in=["Siddhartha", "Fahrenheit 451"], year__in=[1922, 1953]).all()
+    assert books[0] in fetched_books
+    assert books[1] in fetched_books
 
 
 @pytest.mark.asyncio
@@ -108,7 +120,7 @@ async def test_store_and_index_record_of_records():
     )
     new_library = await Library(name="The Library", books=books).save()
     await asyncio.sleep(1)
-    fetched_library = await Library.where_eq(name="The Library").first()
+    fetched_library = await Library.filter(name="The Library").first()
     assert new_library == fetched_library
 
 
@@ -131,9 +143,8 @@ async def test_store_and_wrong_where_eq():
     new_book = await Book(title="Atlas Shrugged", author="Ayn Rand").save()
     assert new_book.title == "Atlas Shrugged"
     assert new_book.author == "Ayn Rand"
-    with pytest.warns(UserWarning):
-        fetched_book = await Book.where_eq(title="Atlas Shrugged", foo="bar").all()
-    assert len(fetched_book) == 0
+    with pytest.raises(KeyError):
+        await Book.filter(title="Atlas Shrugged", foo="bar").all()
 
 
 @pytest.mark.asyncio
@@ -154,6 +165,7 @@ async def test_dict_field_save():
     book = await BookWithDictAuthor(
         title="Test Book", author={"first": "John", "last": "Doe"}
     ).save()
+    await asyncio.sleep(1)
     fetched_book = await BookWithDictAuthor.fetch(book.id_hash).first()
     assert fetched_book.author == {"first": "John", "last": "Doe"}
 

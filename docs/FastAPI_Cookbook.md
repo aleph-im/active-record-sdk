@@ -134,12 +134,13 @@ async def get_users(
 This endpoint will return a list of users, paginated by 20 users per page.
 
 ### Using an Index to query Records
+
 ```python
 @app.get("/users/{username}")
 async def get_user(
-    username: str,
+        username: str,
 ) -> User:
-    return await User.fetch_objects().where_eq(username=username).first()
+    return await User.fetch_objects().filter(username=username).first()
 ```
 This endpoint will return a single user, given their username.
 

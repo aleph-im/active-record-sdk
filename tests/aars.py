@@ -87,7 +87,9 @@ async def test_in_query():
         Book(title="Fahrenheit 451", author="Ray Bradbury", year=1953).save(),
     )
     await asyncio.sleep(1)
-    fetched_books = await Book.filter(title__in=["Siddhartha", "Fahrenheit 451"], year__in=[1922, 1953]).all()
+    fetched_books = await Book.filter(
+        title__in=["Siddhartha", "Fahrenheit 451"], year__in=[1922, 1953]
+    ).all()
     assert books[0] in fetched_books
     assert books[1] in fetched_books
 

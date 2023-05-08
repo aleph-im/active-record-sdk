@@ -127,13 +127,13 @@ class Record(BaseModel, ABC):
 
     def __eq__(self, other):
         return (
-                str(self.item_hash) == str(other.item_hash)
-                and self.current_revision == other.current_revision
-                and self.revision_hashes == other.revision_hashes
-                and self.forgotten == other.forgotten
-                and self.content == other.content
-                and self.signer == other.signer
-                and self.changed == other.changed
+            str(self.item_hash) == str(other.item_hash)
+            and self.current_revision == other.current_revision
+            and self.revision_hashes == other.revision_hashes
+            and self.forgotten == other.forgotten
+            and self.content == other.content
+            and self.signer == other.signer
+            and self.changed == other.changed
             # do not compare timestamps, they can deviate on Aleph between commitment and finalization
         )
 
@@ -337,7 +337,10 @@ class Record(BaseModel, ABC):
 
     @classmethod
     def fetch(
-        cls: Type[R], hashes: Union[Union[str, ItemHash], List[Union[str, ItemHash]]]
+        cls: Type[R],
+        hashes: Union[
+            Union[str, ItemHash], List[Union[str, ItemHash]], Set[Union[str, ItemHash]]
+        ],
     ) -> PageableResponse[R]:
         """
         Fetches one or more objects of given type by its/their item_hash[es].
@@ -346,7 +349,9 @@ class Record(BaseModel, ABC):
         Returns:
             A pageable response object, which can be asynchronously iterated over.
         """
-        if not isinstance(hashes, List):
+        if isinstance(hashes, set):
+            hashes = list(hashes)
+        if not isinstance(hashes, list):
             hashes = [hashes]
         items = AARS.fetch_records(cls, list(hashes))
         return PageableResponse(items)
@@ -636,7 +641,10 @@ class Index(Record, Generic[R]):
     ) -> AsyncIterator[R]:
         async for item in items:
             class_properties = item.content
-            if all(query.comparators[key].value(value, class_properties[key]) for key, value in query.items()):
+            if all(
+                query.comparators[key].value(value, class_properties[key])
+                for key, value in query.items()
+            ):
                 yield item
 
     def add_record(self, obj: R):
@@ -996,9 +1004,7 @@ class AARS:
             total_items = aleph_resp.pagination_total
             per_page = aleph_resp.pagination_per_page
             # log the total number of items and pages
-            logger.debug(
-                f"Found {total_items} items in {channel or 'all channels'}"
-            )
+            logger.debug(f"Found {total_items} items in {channel or 'all channels'}")
             logger.debug(f"Fetching {math.ceil(total_items / per_page)} pages")
             if total_items > per_page:
                 for next_page in range(2, math.ceil(total_items / per_page) + 1):

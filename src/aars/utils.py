@@ -22,7 +22,8 @@ from typing import (
     Awaitable,
     Callable,
     Tuple,
-    Dict, Iterator,
+    Dict,
+    Iterator,
 )
 
 from .exceptions import AlreadyUsedError
@@ -83,7 +84,9 @@ class IndexQuery(OrderedDict, Generic[T]):
                 key = item[0]
                 self.comparators[key] = Comparator.EQ
             if key not in record_type.__annotations__:
-                raise KeyError(f"Invalid key '{key}' for record type {record_type.__name__}")
+                raise KeyError(
+                    f"Invalid key '{key}' for record type {record_type.__name__}"
+                )
             values[key] = item[1]
         super().__init__(values)
         self.record_type = record_type
@@ -111,7 +114,12 @@ class IndexQuery(OrderedDict, Generic[T]):
             The subquery.
         """
         return IndexQuery(
-            self.record_type, **{key + "__" + self.comparators[key].name: arg for key, arg in self.items() if key in keys}
+            self.record_type,
+            **{
+                key + "__" + self.comparators[key].name: arg
+                for key, arg in self.items()
+                if key in keys
+            },
         )
 
     def get_unfolded_queries(self) -> Iterator["IndexQuery"]:
@@ -131,7 +139,9 @@ class IndexQuery(OrderedDict, Generic[T]):
         for key, comparator in self.comparators.items():
             if comparator == Comparator.IN:
                 for value in self[key]:
-                    yield from IndexQuery(self.record_type, **{key: value}).get_unfolded_queries()
+                    yield from IndexQuery(
+                        self.record_type, **{key: value}
+                    ).get_unfolded_queries()
             else:
                 yield self
 

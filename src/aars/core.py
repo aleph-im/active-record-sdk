@@ -31,6 +31,7 @@ from typing import (
 )
 
 from aiohttp import ServerDisconnectedError
+from aleph_message.status import MessageStatus
 from pydantic import BaseModel, Field
 
 from aleph.sdk.client import AuthenticatedAlephClient
@@ -48,7 +49,12 @@ from .utils import (
     PageableRequest,
     EmptyAsyncIterator,
 )
-from .exceptions import AlreadyForgottenError, AlephPermissionError, NotStoredError
+from .exceptions import (
+    AlreadyForgottenError,
+    AlephPermissionError,
+    NotStoredError,
+    AlephPostError,
+)
 
 logger = logging.getLogger(__name__)
 R = TypeVar("R", bound="Record")
@@ -762,6 +768,19 @@ class AARS:
             channel=channel,
             ref=obj.item_hash,
         )
+        if status not in (MessageStatus.PROCESSED, MessageStatus.PENDING):
+            # retry
+            for i in range(cls.retry_count):
+                message, status = await cls.session.create_post(
+                    post_content=obj.content,
+                    post_type=post_type,
+                    channel=channel,
+                    ref=obj.item_hash,
+                )
+                if status in (MessageStatus.PROCESSED, MessageStatus.PENDING):
+                    break
+                if i == cls.retry_count - 1:
+                    raise AlephPostError(obj, status, message)
         if obj.item_hash is None:
             obj.item_hash = message.item_hash
         obj.revision_hashes.append(message.item_hash)

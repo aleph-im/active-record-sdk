@@ -102,3 +102,20 @@ class NotStoredError(AlephError):
         self.type = record.content
         self.message = f"{message.format(self.type)}"
         super().__init__(self.message)
+
+
+class AlephPostError(AlephError):
+    """Exception raised when a network request to Aleph fails."""
+
+    def __init__(
+        self,
+        obj,
+        response_code,
+        response,
+        message="Failed to post object '{0}' to Aleph with status {1}: {2}",
+    ):
+        self.obj = obj
+        self.response_code = response_code
+        self.response = response
+        self.message = f"{message.format(self.obj, self.response_code, self.response)}"
+        super().__init__(self.message)

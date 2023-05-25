@@ -11,20 +11,9 @@ in the asynchronous environment of AARS.
 import operator
 from enum import Enum
 from itertools import *
-from typing import (
-    AsyncIterator,
-    List,
-    TypeVar,
-    OrderedDict,
-    Generic,
-    Type,
-    Optional,
-    Awaitable,
-    Callable,
-    Tuple,
-    Dict,
-    Iterator,
-)
+from typing import (AsyncIterator, Awaitable, Callable, Dict, Generic,
+                    Iterator, List, Optional, OrderedDict, Tuple, Type,
+                    TypeVar)
 
 from .exceptions import AlreadyUsedError
 

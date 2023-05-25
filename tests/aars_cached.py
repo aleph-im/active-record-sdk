@@ -1,15 +1,21 @@
 import asyncio
-from typing import List, Optional
 
 import pytest
 from aleph.sdk import AuthenticatedAlephClient
 from aleph.sdk.chains.ethereum import get_fallback_account
 from aleph.sdk.conf import settings
+from aleph.sdk.vm.cache import TestVmCache
 
 from src.aars import AARS, Index, Record
 from src.aars.exceptions import AlreadyForgottenError
+from tests.aars import Book, Library
 
-AARS(session=AuthenticatedAlephClient(get_fallback_account(), settings.API_HOST))
+AARS(
+    session=AuthenticatedAlephClient(
+        get_fallback_account(), api_server=settings.API_HOST
+    ),
+    cache=TestVmCache(),
+)
 
 
 @pytest.fixture(scope="session")
@@ -28,48 +34,15 @@ def create_indices(request):
         pass
 
 
-class Book(Record):
-    title: str
-    author: str
-    year: Optional[int]
-
-
-class Library(Record):
-    name: str
-    books: List[Book]
-
-
-def test_invalid_index_created():
-    try:
-        index = None
-        with pytest.raises(KeyError):
-            index = Index(Book, "some_nonexistent_field")
-    finally:
-        if index:
-            Record.remove_index(index)
-
-
-def test_duplicate_index_creation():
-    with pytest.raises(ValueError):
-        Index(Book, "title")
-
-
 @pytest.mark.asyncio
-async def test_sync_indices():
-    await AARS.sync_indices()
-    assert len(Record.get_indices()) == 3
-    assert len(Book.get_indices()) == 2
-    assert len(Library.get_indices()) == 1
-
-
-@pytest.mark.asyncio
-async def test_store_and_index():
-    new_book = await Book(title="Atlas Shrugged", author="Ayn Rand").save()
-    assert new_book.title == "Atlas Shrugged"
-    assert new_book.author == "Ayn Rand"
+async def test_deserialization_from_cache():
+    book = await Book(title="Cached Book", author="John Doe").save()
     await asyncio.sleep(1)
-    fetched_book = await Book.filter(title="Atlas Shrugged").first()
-    assert new_book == fetched_book
+    book.title = "Cached Book 2: The Recaching"
+    await book.save()
+    await asyncio.sleep(1)
+    fetched_book = await Book.fetch(book.item_hash).first()
+    assert book == fetched_book
 
 
 @pytest.mark.asyncio
@@ -174,36 +147,3 @@ async def test_dict_field_save():
     await asyncio.sleep(1)
     fetched_book = await BookWithDictAuthor.fetch(book.item_hash).first()
     assert fetched_book.author == {"first": "John", "last": "Doe"}
-
-
-@pytest.mark.asyncio
-async def test_negative_limit_pagination():
-    with pytest.raises(ValueError):
-        await Book.fetch_objects().page(1, -1)
-
-
-@pytest.mark.asyncio
-async def test_large_page_size_pagination():
-    page = await Book.fetch_objects().page(1, 100)
-    assert len(page) <= 100
-
-
-@pytest.mark.asyncio
-async def test_non_existent_revision():
-    book = Book(title="Test Book", author="John Doe")
-    await book.save()
-    with pytest.raises(IndexError):
-        await book.fetch_revision(rev_no=10)
-
-
-@pytest.mark.asyncio
-async def test_save_without_changes():
-    book = await Book(title="Test Book", author="John Doe").save()
-    original_revision_count = len(book.revision_hashes)
-    book = await book.save()
-    assert len(book.revision_hashes) == original_revision_count
-
-
-@pytest.mark.asyncio
-async def test_drop_table():
-    await Record.forget_all()

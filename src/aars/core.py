@@ -10,51 +10,28 @@ To get started, simply define your data model as a subclass of the Record class 
 For more information on how to use AARS, please see the documentation.
 """
 import asyncio
+import logging
 import math
 import warnings
-import logging
 from abc import ABC
 from operator import attrgetter
-from typing import (
-    Type,
-    TypeVar,
-    Dict,
-    ClassVar,
-    List,
-    Set,
-    Any,
-    Union,
-    Tuple,
-    Optional,
-    Generic,
-    AsyncIterator,
-)
+from typing import (Any, AsyncIterator, ClassVar, Dict, Generic, List,
+                    Optional, Set, Tuple, Type, TypeVar, Union)
 
 from aiohttp import ServerDisconnectedError
+from aleph.sdk.chains.ethereum import get_fallback_account
+from aleph.sdk.client import AuthenticatedAlephClient
+from aleph.sdk.conf import settings
+from aleph.sdk.types import Account
+from aleph.sdk.vm.cache import BaseVmCache
+from aleph_message.models import ChainRef, ItemHash, PostMessage
 from aleph_message.status import MessageStatus
 from pydantic import BaseModel, Field
 
-from aleph.sdk.client import AuthenticatedAlephClient
-from aleph.sdk.types import Account
-from aleph.sdk.chains.ethereum import get_fallback_account
-from aleph.sdk.conf import settings
-from aleph.sdk.vm.cache import VmCache
-from aleph_message.models import PostMessage, ItemHash, ChainRef
-
-from .utils import (
-    subslices,
-    async_iterator_to_list,
-    IndexQuery,
-    PageableResponse,
-    PageableRequest,
-    EmptyAsyncIterator,
-)
-from .exceptions import (
-    AlreadyForgottenError,
-    AlephPermissionError,
-    NotStoredError,
-    AlephPostError,
-)
+from .exceptions import (AlephPermissionError, AlephPostError,
+                         AlreadyForgottenError, NotStoredError)
+from .utils import (EmptyAsyncIterator, IndexQuery, PageableRequest,
+                    PageableResponse, async_iterator_to_list, subslices)
 
 logger = logging.getLogger(__name__)
 R = TypeVar("R", bound="Record")
@@ -693,7 +670,7 @@ class AARS:
     api_url: str
     retry_count: int
     session: AuthenticatedAlephClient
-    cache: Optional[VmCache]
+    cache: Optional[BaseVmCache]
 
     def __init__(
         self,
@@ -701,7 +678,7 @@ class AARS:
         channel: Optional[str] = None,
         api_url: Optional[str] = None,
         session: Optional[AuthenticatedAlephClient] = None,
-        cache: Optional[VmCache] = None,
+        cache: Optional[BaseVmCache] = None,
         retry_count: Optional[int] = None,
     ):
         """
@@ -788,7 +765,8 @@ class AARS:
         obj.timestamp = message.time
         obj.signer = message.sender
         if cls.cache:
-            await cls.cache.set(message.item_hash, obj.json())
+            await cls.cache.set(obj.item_hash, obj.json())
+            await cls.cache.set("msg_" + message.item_hash, obj.json())
         return obj
 
     @classmethod
@@ -806,6 +784,7 @@ class AARS:
         if channel is None:
             channel = cls.channel
         hashes = []
+        tasks = []
         for obj in objs:
             if obj.item_hash is None:
                 raise ValueError("Cannot forget an object that has not been posted.")
@@ -813,16 +792,19 @@ class AARS:
                 raise AlephPermissionError(
                     obj.signer, obj.item_hash, cls.account.get_address()
                 )
-            hashes += [obj.item_hash] + obj.revision_hashes
-        forget_task = cls.session.forget(
-            hashes=hashes,
-            reason=None,
-            channel=channel,
-        )
-        if cls.cache:
-            await asyncio.gather(forget_task, *[cls.cache.delete(h) for h in hashes])
-        else:
-            await forget_task
+            hashes += obj.revision_hashes
+            if cls.cache:
+                tasks.append(cls.cache.delete(obj.item_hash))
+                for h in obj.revision_hashes[1:]:
+                    tasks.append(cls.cache.delete("msg_" + h))
+        tasks = [
+            cls.session.forget(
+                hashes=hashes,
+                reason=None,
+                channel=channel,
+            )
+        ] + tasks
+        await asyncio.gather(*tasks)
 
     @classmethod
     async def fetch_records(
@@ -904,6 +886,20 @@ class AARS:
     ) -> List[R]:
         assert cls.cache, "Cache is not set"
         raw_records = await asyncio.gather(*[cls.cache.get(h) for h in item_hashes])
+        return [
+            record_type.parse_raw(r)
+            for r in raw_records
+            if r is not None and not isinstance(r, BaseException)
+        ]
+
+    @classmethod
+    async def _fetch_message_from_cache(
+        cls, record_type: Type[R], item_hashes: List[str]
+    ) -> List[R]:
+        assert cls.cache, "Cache is not set"
+        raw_records = await asyncio.gather(
+            *[cls.cache.get("msg_" + h) for h in item_hashes]
+        )
         return [
             record_type.parse_raw(r)
             for r in raw_records
@@ -1000,8 +996,19 @@ class AARS:
         if owners is None and channels is None:
             channels = [cls.channel]
 
+        if cls.cache:
+            # If we have a cache, try to fetch the revisions from it first
+            resp = await cls._fetch_records_from_cache(
+                record_type=record_type, item_hashes=[ref]
+            )
+            if resp:
+                for item_hash in list(reversed(resp[0].revision_hashes)):
+                    yield item_hash
+                return
+
         aleph_resp = None
         retries = cls.retry_count
+
         while aleph_resp is None:
             try:
                 aleph_resp = await cls.session.get_messages(
@@ -1047,7 +1054,7 @@ class AARS:
             The record in the state it was when the message was created.
         """
         if cls.cache:
-            cache_resp = await cls._fetch_records_from_cache(record_type, [item_hash])
+            cache_resp = await cls._fetch_message_from_cache(record_type, [item_hash])
             if len(cache_resp) > 0:
                 return cache_resp[0]
         aleph_resp = await cls.session.get_messages(hashes=[item_hash])

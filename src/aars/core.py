@@ -307,10 +307,10 @@ class Record(BaseModel, ABC):
             The initialized object.
         """
         obj = cls(**post["content"])
-        if post.get("ref") is None:
+        if post.get("original_item_hash") is None:
             obj.item_hash = ItemHash(post["item_hash"])
         else:
-            obj.item_hash = ItemHash(post["ref"])
+            obj.item_hash = ItemHash(post["original_item_hash"])
         await obj.update_revision_hashes()
         assert obj.item_hash is not None
         obj.current_revision = obj.revision_hashes.index(obj.item_hash)
@@ -886,11 +886,15 @@ class AARS:
     ) -> List[R]:
         assert cls.cache, "Cache is not set"
         raw_records = await asyncio.gather(*[cls.cache.get(h) for h in item_hashes])
-        return [
-            record_type.parse_raw(r)
-            for r in raw_records
-            if r is not None and not isinstance(r, BaseException)
-        ]
+        return list(
+            reversed(
+                [
+                    record_type.parse_raw(r)
+                    for r in raw_records
+                    if r is not None and not isinstance(r, BaseException)
+                ]
+            )
+        )
 
     @classmethod
     async def _fetch_message_from_cache(

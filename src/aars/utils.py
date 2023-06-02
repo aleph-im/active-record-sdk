@@ -80,6 +80,22 @@ class IndexQuery(OrderedDict, Generic[T]):
         super().__init__(values)
         self.record_type = record_type
 
+    def __repr__(self) -> str:
+        return (
+            self.record_type.__name__
+            + "."
+            + ".".join(
+                [
+                    key
+                    + "__"
+                    + self.comparators[key].name.lower()
+                    + "="
+                    + repr(self[key])
+                    for key in self.keys()
+                ]
+            )
+        )
+
     def get_index_name(self) -> str:
         """
         Get the name of the index that this query would use.
@@ -132,7 +148,11 @@ class IndexQuery(OrderedDict, Generic[T]):
                         self.record_type, **{key: value}
                     ).get_unfolded_queries()
             else:
-                yield self
+                if all(
+                    comparator != Comparator.IN
+                    for comparator in self.comparators.values()
+                ):
+                    yield self
 
 
 class PageableResponse(AsyncIterator[T], Generic[T]):

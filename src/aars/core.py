@@ -1019,7 +1019,7 @@ class AARS:
                     channels=channels,
                     addresses=owners,
                     refs=[ref],
-                    pagination=50,
+                    pagination=200,
                     page=page,
                 )
             except ServerDisconnectedError:

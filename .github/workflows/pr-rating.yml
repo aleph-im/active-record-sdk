@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: PR Difficulty Rating
-        uses: MHHukiewitz/pr-rating-action@main
+        uses: rate-my-pr/gh-action@main
         with:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           LLAMA_URL: ${{ secrets.LLAMA_URL }}
